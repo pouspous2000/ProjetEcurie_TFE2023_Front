@@ -1,0 +1,14 @@
+/.git
+/node_modules
+
+# prettier config
+.prettierrc
+.prettierignore
+
+#markdown files
+*.md
+
+#css and json files
+*.css
+*.json
+*.html
