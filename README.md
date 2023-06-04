@@ -60,8 +60,7 @@ But as pointed out by the community and the project creator, these errors are no
 
 ## Configure commit hooks 
 
-As we want to ensure a certain consistency in the code, we start by configuring pre-commit hooks for 
-- eslint 
+As we want to ensure a certain consistency in the code, we start by configuring pre-commit hooks for
 - prettier
 - test with jest 
 
@@ -93,6 +92,24 @@ and add a dedicated script in package.json because we want to be able to see pre
     "eslint-check": "eslint .",
     "prettier-check": "prettier --check .",
 ```
+
+## Install a css framework 
+[react-bootstrap](https://react-bootstrap.github.io/)
+- uses bootstrap css via a cdn on index.html which is very logic for performances and bundle size 
+  - we could of course install it with npm but it is not mandatory as we don't plan to customize sass files 
+- has all bootstrap beloved components implemented in React which will save us a lot of development time 
+
+## Note on css management 
+We'll manage the css as follows : 
+- use bootstrap classes where possible 
+- with that in mind :
+  - App-wide css is in src > App.css 
+  - Component specific css is in iots dedicated css module 
+    - [official doc](https://create-react-app.dev/docs/adding-a-css-modules-stylesheet/)
+    - css modules are scoped to their React component avoiding any nameClash etc 
+  - for dynamic style : first think dynamic class (className) attribute
+  - if not easily doable : go for inline style attribute 
+
 
 
 
