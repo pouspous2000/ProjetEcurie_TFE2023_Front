@@ -6,19 +6,19 @@ export class Post extends Model {
 	static propertyValidatorMapper = {
 		userId: {
 			validator: this.validatePK,
-			errorMessage: 'user Id error message',
+			errorMessage: 'post_validation_userId',
 		},
 		id: {
 			validator: this.validatePK,
-			errorMessage: 'id error message',
+			errorMessage: 'post_validation_id',
 		},
 		title: {
 			validator: this.validateTitle,
-			errorMessage: 'title error message',
+			errorMessage: 'post_validation_title',
 		},
 		body: {
 			validator: this.validateBody,
-			errorMessage: 'body error message',
+			errorMessage: 'post_validation_body',
 		},
 	}
 

@@ -1,4 +1,5 @@
 import PropTypes from 'prop-types'
+import { useTranslation } from 'react-i18next'
 import { Form } from 'react-bootstrap'
 
 const FieldPropTypes = PropTypes.shape({
@@ -12,6 +13,7 @@ const FieldPropTypes = PropTypes.shape({
 })
 
 export const PostForm = props => {
+	const { t } = useTranslation()
 	return (
 		<>
 			<Form.Group className="mb-3">
@@ -25,7 +27,7 @@ export const PostForm = props => {
 					onBlur={props.title.blurHandler}
 					isInvalid={props.title.hasError}
 				/>
-				<Form.Control.Feedback type="invalid">{props.title.errorMessage}</Form.Control.Feedback>
+				<Form.Control.Feedback type="invalid">{t(props.title.errorMessage)}</Form.Control.Feedback>
 			</Form.Group>
 			<Form.Group className="mb-3">
 				<Form.Label>Body</Form.Label>
@@ -37,7 +39,7 @@ export const PostForm = props => {
 					onBlur={props.body.inputHandler}
 					isInvalid={props.body.hasError}
 				/>
-				<Form.Control.Feedback type="invalid">{props.body.errorMessage}</Form.Control.Feedback>
+				<Form.Control.Feedback type="invalid">{t(props.body.errorMessage)}</Form.Control.Feedback>
 			</Form.Group>
 
 			<Form.Group className="mb-3">
@@ -50,7 +52,7 @@ export const PostForm = props => {
 					onBlur={props.id.blurHandler}
 					isInvalid={props.id.hasError}
 				/>
-				<Form.Control.Feedback type="invalid">{props.id.errorMessage}</Form.Control.Feedback>
+				<Form.Control.Feedback type="invalid">{t(props.id.errorMessage)}</Form.Control.Feedback>
 			</Form.Group>
 
 			<Form.Group className="mb-3">
@@ -63,7 +65,7 @@ export const PostForm = props => {
 					onBlur={props.userId.blurHandler}
 					isInvalid={props.userId.hasError}
 				/>
-				<Form.Control.Feedback type="invalid">{props.userId.errorMessage}</Form.Control.Feedback>
+				<Form.Control.Feedback type="invalid">{t(props.userId.errorMessage)}</Form.Control.Feedback>
 			</Form.Group>
 		</>
 	)

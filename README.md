@@ -240,3 +240,40 @@ GUI validation
 - we believe we thus offer an excellent user experience 
 
 As the validation implies a lot a logic and as we didn't want to pollute our code with redundant logic , we decided to implement a custom hook which will be used by most / every field of the app
+
+## Translations 
+
+We first wanted to use this [package](https://www.npmjs.com/package/i18n) because 
+- the same package is used by the backend, and we want to be consistent 
+- it is light, and we don't plan to use a lot of "complicated" features 
+
+But turned out that the package is node-compatible only as it uses fs 
+
+We will therefore switch to first google result : [i18next](https://react.i18next.com/) (and probably adjust translation management in backend) 
+```
+  npm install react-i18next i18next --save
+```
+as noticed the doc tells us to import 2 packages 
+  - i18next is the "proper" translator package 
+  - react-i18n ... well adds to react-hooks ! 
+
+We'll configure the packages as show in the official step by step guide [guide](https://react.i18next.com/latest/using-with-hooks)
+
+As the package contains many useful functions: we don't need to manage the i18n instance which holds critical data such as current lang, we should normally have to implement / deal 
+- a singleton to prevent multiple incompatible i18n instances 
+- and provide this single instance to the whole application (via a store or more likely a react context for this usage)
+
+### Translation managements 
+First we'd like to mention we prefer .js over .json files 
+
+And we decided to build the application on a "module" mode which is a bit odoo-like 
+
+therefore we need to merge translations of each module to one place which will then provide all available translations to i18n instance : See utils / LocalUtils.js 
+
+### Nice to have but not implemented 
+- use a browser lang detector 
+- and do not load all translations at once (which could lead to perf issues but the application is not that big !)
+- implement a 'name_clash' method in case of unwanted duplicated key merge but the goal here is to show that it's possible to handle multi-lang not to implement our own package
+
+
+
