@@ -2,3 +2,6 @@
   ADD APP-WIDE CSS HERE
 */
 
+textarea{
+    height: 100px;
+}

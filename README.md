@@ -103,17 +103,140 @@ and add a dedicated script in package.json because we want to be able to see pre
 We'll manage the css as follows : 
 - use bootstrap classes where possible 
 - with that in mind :
-  - App-wide css is in src > App.css 
-  - Component specific css is in iots dedicated css module 
+  - App-wide css is in src > index.css 
+  - Component specific css is in its dedicated css module 
     - [official doc](https://create-react-app.dev/docs/adding-a-css-modules-stylesheet/)
     - css modules are scoped to their React component avoiding any nameClash etc 
   - for dynamic style : first think dynamic class (className) attribute
   - if not easily doable : go for inline style attribute 
 
+## Validation 
+For validation we'll use [validator.js library](https://github.com/validatorjs/validator.js/) because this is the library used by sequelize which is the API's ORM
 
+Although it's not possible to ensure perfect compatibility between back and front validation (sequelize probably modifies the behavior of validator.js)
+, we can ensure the best consistency by using this library
 
+Notice that all validation methods provided by the package accept as value to be tested a string, if another type is provided will throw a TypeError 
 
+We wanted the validation logic for each entity to be grouped in a single file rather than being distributed across several components, so we decided to implement Models 
 
+As the creation of getters and setters is time-consuming and verbose, we've decided to create a method to create them automatically. Of course, these methods can always be rewritten, so we don't lose any OOP-related functionality, with the exception of the es6 syntax of the classes for getters and setters.
 
+Validation functions are static (and not instance methods), since we wanted to be able to validate data at entity creation, and creating a class instance at this stage makes no sense.
 
+the code structure is always the same for any model 
+```javascript
 
+export class Post extends Model {
+	static propertyValidatorMapper = {
+		/* 
+		    this static property is mandatory and very important as 
+		    the parent class (Model) uses this property and assumes the structure of the object is this one
+		 */
+		userId: {
+			validator: this.validatePK,
+			errorMessage: 'user Id error message',
+		},
+		id: {
+			validator: this.validatePK,
+			errorMessage: 'id error message',
+		},
+		title: {
+			validator: this.validateTitle,
+			errorMessage: 'title error message',
+		},
+		body: {
+			validator: this.validateBody,
+			errorMessage: 'body error message',
+		},
+	}
+
+	constructor(userId, id, title, body) {
+		super()
+		this.userId = userId
+		this.id = id
+		this.title = title
+		this.body = body
+	}
+
+	static validatePK(value) {
+		// as mentionned validators are static 
+		return isInt(value, { min: 1 })
+	}
+
+	static validateTitle(value) {
+		return isLength(value, { min: 5 })
+	}
+
+	static validateBody(value) {
+		return isLength(value, { min: 20 })
+	}
+}
+
+```
+
+regarding the Model class (parent class) 
+- it is an abstract class 
+- automatic getter and setter creation based on propertyValidatorMapper static property 
+- implements static method validate which will raise a StableValidationError with provided message if a validator fails 
+- implements a serialize method which will be useful for 
+  - api communication 
+  - store communication (redux or other) which dont like to manage class instances but prefer javascript objects 
+```javascript
+export class Model {
+	constructor() {
+		if (this.constructor === Model) {
+			throw new Error('Abstract Model class should not be instantiated')
+		}
+
+		// automatic getter and setters generation , beware it does not allow to use the syntactic sugars for setters and getters definitions
+		Object.keys(this.constructor.propertyValidatorMapper).forEach(property => {
+			Object.defineProperty(this, property, {
+				get() {
+					return this[`_${property}`]
+				},
+				set(value) {
+					this.constructor.validate(property, `${value}`) //force string casting as validator functions require a string to validate
+					this[`_${property}`] = value
+				},
+				configurable: true,
+				enumerable: true,
+			})
+		})
+	}
+
+	static propertyValidatorMapper = {}
+
+	static validate(property, value) {
+		if (!(property in this.propertyValidatorMapper)) {
+			throw new StableModelPropertyNotFoundError(`property ${property} does not exist`)
+		}
+		if (!this.propertyValidatorMapper[property]['validator'](value)) {
+			throw new StableValidationError(this.propertyValidatorMapper[property]['errorMessage'])
+		}
+	}
+
+	serialize() {
+		// returns an object with the structure {getterName: getterValue} for the instance
+        // exemple with Post => {userId: 1, id: 2, title: '...', body: '...'} 
+		const serialized = {}
+		const modelContext = this
+
+		Object.getOwnPropertyNames(this)
+			.filter(property => property.startsWith('_'))
+			.forEach(property => {
+				const getterName = property.slice(1)
+				serialized[getterName] = modelContext[getterName]
+			})
+		return serialized
+	}
+}
+```
+
+GUI validation 
+- submit event : validation (but it is quit too late for a proper UX)
+- onblur event : validation 
+- input event : validation IF the field has already triggered a blur event
+- we believe we thus offer an excellent user experience 
+
+As the validation implies a lot a logic and as we didn't want to pollute our code with redundant logic , we decided to implement a custom hook which will be used by most / every field of the app
