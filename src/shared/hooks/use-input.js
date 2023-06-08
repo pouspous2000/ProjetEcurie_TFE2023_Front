@@ -3,7 +3,7 @@ import { StableValidationError } from '../Model'
 
 const useInput = (validateFn, defaultValue = '') => {
 	const [enteredValue, setEnteredValue] = useState(defaultValue)
-	const [hadFocus, setHadFocus] = useState(!!defaultValue)
+	const [hadFocus, setHadFocus] = useState(!!enteredValue)
 
 	// derived properties depending on states but which don't require their own state
 	let errorMessage = ''
@@ -21,7 +21,6 @@ const useInput = (validateFn, defaultValue = '') => {
 			throw error
 		}
 	}
-
 	const hasError = !isValueValid && hadFocus
 
 	const inputHandler = event => {

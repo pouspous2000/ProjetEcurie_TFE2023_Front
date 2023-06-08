@@ -1,17 +1,20 @@
-import postLocales from '../../Post/locales'
+import todoLocales from '../../Todo/locales'
 
 export class LocalUtils {
 	static allLocales = [
-		postLocales,
+		todoLocales,
 		{
 			fr: {
 				hello: 'Bonjour en francais',
+				loading: 'Chargement',
 			},
 			en: {
 				hello: 'Hello ! in english ',
+				loading: 'Loading',
 			},
 			nl: {
 				hello: 'Halo ! in het vlaams',
+				loading: 'Laden',
 			},
 		},
 	]

@@ -276,4 +276,54 @@ therefore we need to merge translations of each module to one place which will t
 - implement a 'name_clash' method in case of unwanted duplicated key merge but the goal here is to show that it's possible to handle multi-lang not to implement our own package
 
 
+## Store
+### Context: props drilling 
+Component communication in React (and other javascript frameworks) is "direct", 
+meaning that components communicate only via a parent -> child relationship. 
+This can lead to a problem known as "props_drilling", as shown in the diagram: the red component, 
+in order to communicate with the green component, has to pass through an entire chain, which can be very disabling in larger applications. 
 
+
+![props_drilling](doc/props_drilling.drawio.png)
+
+### Solutions 
+There are 3 "conventional" solutions to props_drilling:
+- use React's contextApi
+- use React's custom hooks
+- use a store management tool like Redux (the industry standard) 
+
+Each of these involves a change in the way components communicate with each other, as they no longer communicate directly with each other to access/modify the data concerned. Each component has CRUD access to centralized data, like a global object in programming.  
+So that the communication pretty much looks like 
+
+![store-like](doc/store.drawio.png)
+
+caution: decentralized data, while practical, are not a solution for everything, so we must differentiate between
+- props_drilling problems
+- application-level states
+
+and component states (which must remain the responsibility of the component in question) 
+
+### Choice : redux with redux toolkit 
+- contextApi is the worst option here for 2 main reasons 
+  - a change in the context will result in a re-render of all components dependent on this context, but most of the time the context is provided to the application as a whole and therefore has a strong negative impact on application performance.
+  - Moreover, context creation is associated with component creation, making the code difficult to maintain. 
+- custom hooks is a perfectly valid alternative
+  - pros 
+    - easy to develop yourself
+    - lightweight
+    - powerful in terms of re-rendering components that use decentralized data 
+  - cons 
+    - requires a thorough knowledge of javascript referenced type management
+    - there is therefore a major risk of changing the state in a "mutable" way, i.e. calculating the next state leads to a modification of the previous state, making the application unpredictable. 
+- redux 
+  - pros 
+    - extremely powerful
+    - great ecosystem and community 
+    - is the current industry gold standard 
+    - ... 
+  - cons 
+    - external depency 
+    - "kind" of hard to use
+
+[official redux doc](https://redux-toolkit.js.org/) 
+- redux toolkit is now encouraged by the redux team because it has a **lot** of great features such as avoid state mutations 

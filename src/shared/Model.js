@@ -17,21 +17,6 @@ export class Model {
 		if (this.constructor === Model) {
 			throw new Error('Abstract Model class should not be instantiated')
 		}
-
-		// automatic getter and setters generation , beware it does not allow to use the syntactic sugars for setters and getters definitions
-		Object.keys(this.constructor.propertyValidatorMapper).forEach(property => {
-			Object.defineProperty(this, property, {
-				get() {
-					return this[`_${property}`]
-				},
-				set(value) {
-					this.constructor.validate(property, `${value}`) //force string casting as validator functions require a string to validate
-					this[`_${property}`] = value
-				},
-				configurable: true,
-				enumerable: true,
-			})
-		})
 	}
 
 	static propertyValidatorMapper = {}
@@ -43,19 +28,5 @@ export class Model {
 		if (!this.propertyValidatorMapper[property]['validator'](value)) {
 			throw new StableValidationError(this.propertyValidatorMapper[property]['errorMessage'])
 		}
-	}
-
-	serialize() {
-		// returns an object with the structure {getterName: getterValue} for the instance
-		const serialized = {}
-		const modelContext = this
-
-		Object.getOwnPropertyNames(this)
-			.filter(property => property.startsWith('_'))
-			.forEach(property => {
-				const getterName = property.slice(1)
-				serialized[getterName] = modelContext[getterName]
-			})
-		return serialized
 	}
 }

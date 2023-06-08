@@ -12,15 +12,15 @@ const FieldPropTypes = PropTypes.shape({
 	reset: PropTypes.func.isRequired,
 })
 
-export const PostForm = props => {
+export const FormCreate = props => {
 	const { t } = useTranslation()
 	return (
 		<>
 			<Form.Group className="mb-3">
-				<Form.Label>Title</Form.Label>
+				<Form.Label>{t('todo_form_title_label')}</Form.Label>
 				<Form.Control
 					type="text"
-					placeholder="title placeholder"
+					placeholder={t('todo_form_title_placeholder')}
 					name="title"
 					value={props.title.value}
 					onInput={props.title.inputHandler}
@@ -29,21 +29,20 @@ export const PostForm = props => {
 				/>
 				<Form.Control.Feedback type="invalid">{t(props.title.errorMessage)}</Form.Control.Feedback>
 			</Form.Group>
+
 			<Form.Group className="mb-3">
-				<Form.Label>Body</Form.Label>
-				<Form.Control
-					as="textarea"
-					placeholder="Body placeholder"
-					value={props.body.value}
-					onInput={props.body.inputHandler}
-					onBlur={props.body.inputHandler}
-					isInvalid={props.body.hasError}
+				<Form.Label>{t('todo_form_completed_label')}</Form.Label>
+				<Form.Check
+					type="checkbox"
+					checked={props.completed.isChecked}
+					onChange={props.completed.changeHandler}
+					isInvalid={props.completed.hasError}
 				/>
-				<Form.Control.Feedback type="invalid">{t(props.body.errorMessage)}</Form.Control.Feedback>
+				<Form.Control.Feedback type="invalid">{t(props.completed.errorMessage)}</Form.Control.Feedback>
 			</Form.Group>
 
 			<Form.Group className="mb-3">
-				<Form.Label>Id</Form.Label>
+				<Form.Label>{t('todo_form_id_label')}</Form.Label>
 				<Form.Control
 					type="number"
 					placeholder="123"
@@ -56,7 +55,7 @@ export const PostForm = props => {
 			</Form.Group>
 
 			<Form.Group className="mb-3">
-				<Form.Label>UserId</Form.Label>
+				<Form.Label>{t('todo_form_userId_label')}</Form.Label>
 				<Form.Control
 					type="number"
 					placeholder="123"
@@ -71,9 +70,16 @@ export const PostForm = props => {
 	)
 }
 
-PostForm.propTypes = {
+FormCreate.propTypes = {
 	title: FieldPropTypes,
-	body: FieldPropTypes,
+	completed: PropTypes.shape({
+		isChecked: PropTypes.bool.isRequired,
+		isValid: PropTypes.bool.isRequired,
+		hasError: PropTypes.bool.isRequired,
+		errorMessage: PropTypes.string.isRequired,
+		changeHandler: PropTypes.func.isRequired,
+		reset: PropTypes.func.isRequired,
+	}),
 	id: FieldPropTypes,
 	userId: FieldPropTypes,
 }
