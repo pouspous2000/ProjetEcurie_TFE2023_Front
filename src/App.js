@@ -1,7 +1,8 @@
-import { TodoList } from './Todo/page/TodoList'
+// import Pension from './Pension/Pension'
+import { Parametre } from './Parametre/Parametre'
 
 function App() {
-	return <TodoList />
+	return <Parametre />
 }
 
 export default App
