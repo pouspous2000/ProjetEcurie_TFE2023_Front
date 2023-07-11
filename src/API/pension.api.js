@@ -24,7 +24,7 @@ const pensionApi = apiSlice.injectEndpoints({
 		updatePension: builder.mutation({
 			query: pension => ({
 				url: `/pensions/${pension.id}`,
-				method: 'PATCH',
+				method: 'PUT',
 				body: pension,
 			}),
 			invalidatesTags: [tag],

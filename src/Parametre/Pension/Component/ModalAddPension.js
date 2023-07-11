@@ -1,50 +1,54 @@
 import React, { useState, useEffect } from 'react'
 import { useAddPensionMutation } from '../../../API/pension.api'
+import useInput from '../../../shared/hooks/use-input'
 import { BaseSpinner } from '../../../shared/ui/BaseSpinner'
+import { Form } from 'react-bootstrap'
+import { useCallback } from 'react'
+import { StableValidationError } from '../../../shared/Model'
 
 function ModalAddPension() {
-	const [name, setName] = useState('')
-	const [monthlyPrice, setMonthlyPrice] = useState('')
-	const [description, setDescription] = useState('')
 	const [addPension, { isLoading, isSuccess }] = useAddPensionMutation()
-	const [isNameValid, setIsNameValid] = useState(false)
-	const [isPriceValid, setIsPriceValid] = useState(true)
 
-	const handleInputBlurName = () => {
-		setIsNameValid(name.trim() !== '')
-	}
-
-	const handleInputBlurPrice = () => {
-		setIsPriceValid(monthlyPrice !== '0')
-	}
-
-	const addPensionHandler = () => {
-		if (!isNameValid || !isPriceValid || monthlyPrice === '') {
-			// ne pas fermer le modal
-		} else {
-			addPension({
-				name: name,
-				monthlyPrice: monthlyPrice,
-				description: description,
-			})
-
-			setName('')
-			setMonthlyPrice('')
-			setDescription('')
+	const validateName = value => {
+		const trimmedValue = value.trim()
+		if (trimmedValue.length === 0 || trimmedValue.length > 255) {
+			throw new StableValidationError('Le nom de la pension doit contenir entre 1 et 255 caractères ')
 		}
 	}
 
-	useEffect(() => {
-		setIsNameValid(name.trim() !== '')
-	}, [name])
+	const validateMonthlyPrice = value => {
+		const Price = value
+		if (Price === '0') {
+			throw new StableValidationError('Le prix de la pension ne peut pas valoir 0 ')
+		}
+	}
+
+	const name = useInput(value => validateName(value), '')
+	const monthlyPrice = useInput(value => validateMonthlyPrice(value), '')
+	const [description, setDescription] = useState('')
+
+	const formResetHandler = useCallback(() => {
+		monthlyPrice.reset() // Réinitialiser le champ monthlyPrice
+		name.reset() // Réinitialiser le champ name
+	}, [monthlyPrice, name])
+
+	const isFormValid = name.isValid && monthlyPrice
+	const isConfirmButtonDisabled = !isFormValid
 
 	useEffect(() => {
 		if (isSuccess) {
-			setName('')
-			setMonthlyPrice('')
 			setDescription('')
+			formResetHandler()
 		}
-	}, [isSuccess])
+	}, [formResetHandler, isSuccess, description])
+
+	const addPensionHandler = () => {
+		addPension({
+			name: name.value,
+			monthlyPrice: monthlyPrice.value,
+			description: description,
+		})
+	}
 
 	return (
 		<>
@@ -69,26 +73,22 @@ function ModalAddPension() {
 						</div>
 						<div className="modal-body">
 							<form>
-								<div className="form-group" style={{ marginTop: '20px', marginBottom: '20px' }}>
-									<h5>Nom de la pension</h5>
-									<input
-										onBlur={handleInputBlurName}
-										onChange={event => setName(event.target.value)}
-										className={`${!isNameValid ? 'invalid' : ''} form-control `}
-										name="name"
-										required
+								<Form.Group className="mb-3">
+									<Form.Label>Nom de la pension </Form.Label>
+									<Form.Control
 										type="text"
-										id="name"
-										placeholder="Ex: Pension Complète"
-										defaultValue={name}
+										placeholder="placeholder"
+										name="name"
+										value={name.value}
+										onInput={name.inputHandler}
+										onBlur={name.blurHandler}
+										isInvalid={name.hasError}
 									/>
-									{!isNameValid && (
-										<p style={{ color: 'red' }}>Veuillez entrer un nom de pension valide.</p>
-									)}
-								</div>
-
-								<div className="form-group" style={{ marginTop: '20px', marginBottom: '20px' }}>
-									<h5>
+									<Form.Control.Feedback type="invalid">{name.errorMessage}</Form.Control.Feedback>
+								</Form.Group>
+								<Form.Group className="mb-3">
+									<Form.Label>
+										{' '}
 										Prix de la pension{' '}
 										<p
 											style={{
@@ -99,36 +99,30 @@ function ModalAddPension() {
 											}}>
 											(En €)
 										</p>{' '}
-									</h5>
-									<input
-										onBlur={handleInputBlurPrice}
-										onChange={event => setMonthlyPrice(event.target.value)}
-										className={`${!isPriceValid ? 'invalid' : ''} form-control `}
-										name="monthlyPrice"
-										required
+									</Form.Label>
+									<Form.Control
 										type="number"
-										id="monthlyPrice"
-										min="0"
-										max="10000"
 										placeholder="Ex: 110"
-										value={monthlyPrice}
+										name="number"
+										min="1"
+										max="10000"
+										value={monthlyPrice.value}
+										onInput={monthlyPrice.inputHandler}
+										onBlur={monthlyPrice.blurHandler}
+										isInvalid={monthlyPrice.hasError}
 									/>
-									{!isPriceValid && (
-										<p style={{ color: 'red' }}>Veuillez entrer un nombre différent de 0.</p>
-									)}
-								</div>
-
-								<div className="form-group" style={{ marginTop: '20px', marginBottom: '20px' }}>
-									<h5>Description de la pension </h5>
-									<textarea
-										onChange={event => setDescription(event.target.value)}
-										name="description"
-										className="form-control"
-										id="description"
+									<Form.Control.Feedback type="invalid">{name.errorMessage}</Form.Control.Feedback>
+								</Form.Group>
+								<Form.Group className="mb-3">
+									<Form.Label>Description de la pension</Form.Label>
+									<Form.Control
 										rows="3"
 										placeholder="Décrivez ce que propose votre pension"
-										value={description}></textarea>
-								</div>
+										value={description}
+										onChange={event => setDescription(event.target.value)}
+									/>
+									<Form.Control.Feedback type="invalid">{name.errorMessage}</Form.Control.Feedback>
+								</Form.Group>
 							</form>
 							<div className="modal-footer">
 								<button
@@ -138,7 +132,7 @@ function ModalAddPension() {
 										borderColor: '#af8d68',
 										color: '#F5F5DC',
 									}}
-									data-bs-dismiss="modal"
+									disabled={isConfirmButtonDisabled}
 									onClick={addPensionHandler}>
 									Envoyer
 								</button>

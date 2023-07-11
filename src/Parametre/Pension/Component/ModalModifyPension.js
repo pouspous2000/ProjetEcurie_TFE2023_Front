@@ -5,10 +5,10 @@ function ModalModifyPension({ NomPension, PrixPension, DescriptionPension, IdPen
 	const [name, setName] = useState(NomPension)
 	const [monthlyPrice, setMonthlyPrice] = useState(PrixPension)
 	const [description, setDescription] = useState(DescriptionPension)
-	const [idPension, setIdPension] = useState(IdPension)
 	const [updatePension, { isLoading, isSuccess, isError, error: errorMessage }] = useUpdatePensionMutation()
 	const [isNameValid, setIsNameValid] = useState(true)
 	const [isPriceValid, setIsPriceValid] = useState(true)
+	let isFormValid = isNameValid && isPriceValid
 
 	const handleInputBlurName = () => {
 		setIsNameValid(name.trim() !== '')
@@ -25,7 +25,7 @@ function ModalModifyPension({ NomPension, PrixPension, DescriptionPension, IdPen
 				name: name,
 				monthlyPrice: monthlyPrice,
 				description: description,
-				id: Number(idPension),
+				id: IdPension,
 			})
 		}
 	}
@@ -115,7 +115,7 @@ function ModalModifyPension({ NomPension, PrixPension, DescriptionPension, IdPen
 												min="0"
 												max="10000"
 												placeholder="Ex: 110"
-												value={monthlyPrice}
+												defaultValue={monthlyPrice}
 											/>
 											{!isPriceValid && (
 												<p style={{ color: 'red' }}>
@@ -133,7 +133,7 @@ function ModalModifyPension({ NomPension, PrixPension, DescriptionPension, IdPen
 												id="description"
 												rows="3"
 												placeholder="Décrivez ce que propose votre pension"
-												value={description}></textarea>
+												defaultValue={description}></textarea>
 										</div>
 									</form>
 									<div class="modal-footer">
