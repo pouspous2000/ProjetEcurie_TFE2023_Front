@@ -1,163 +1,169 @@
+import React, { useState, useEffect, useCallback } from 'react'
 import { useUpdatePensionMutation } from '../../../API/pension.api'
-import { useState, useEffect } from 'react'
+import useInput from '../../../shared/hooks/use-input'
 import { BaseSpinner } from '../../../shared/ui/BaseSpinner'
+import { Form } from 'react-bootstrap'
+import { StableValidationError } from '../../../shared/Model'
+
 function ModalModifyPension({ NomPension, PrixPension, DescriptionPension, IdPension }) {
-	const [name, setName] = useState(NomPension)
-	const [monthlyPrice, setMonthlyPrice] = useState(PrixPension)
-	const [description, setDescription] = useState(DescriptionPension)
-	const [updatePension, { isLoading, isSuccess, isError, error: errorMessage }] = useUpdatePensionMutation()
-	const [isNameValid, setIsNameValid] = useState(true)
-	const [isPriceValid, setIsPriceValid] = useState(true)
-	let isFormValid = isNameValid && isPriceValid
+	const [modalOpen, setModalOpen] = useState(false)
+	const [updatePension, { isLoading, isSuccess }] = useUpdatePensionMutation()
 
-	const handleInputBlurName = () => {
-		setIsNameValid(name.trim() !== '')
-	}
-
-	const handleInputBlurPrice = () => {
-		setIsPriceValid(monthlyPrice !== '0')
-	}
-	const updatePensionHandler = () => {
-		if (!isNameValid || !isPriceValid || monthlyPrice === '') {
-			// ne pas fermer le modal
-		} else {
-			updatePension({
-				name: name,
-				monthlyPrice: monthlyPrice,
-				description: description,
-				id: IdPension,
-			})
+	const validateName = value => {
+		const trimmedValue = value.trim()
+		if (trimmedValue.length === 0 || trimmedValue.length > 255) {
+			throw new StableValidationError('Le nom de la pension doit contenir entre 1 et 255 caractères.')
 		}
 	}
 
-	const resetForm = () => {
-		setName('')
-		setMonthlyPrice('')
-		setDescription('')
+	const validateMonthlyPrice = value => {
+		const price = value
+		if (price === '' || price === 0) {
+			throw new StableValidationError('Le prix de la pension ne peut pas valoir 0.')
+		}
 	}
+
+	const name = useInput(value => validateName(value), NomPension)
+	const monthlyPrice = useInput(value => validateMonthlyPrice(value), PrixPension)
+	const [description, setDescription] = useState(DescriptionPension)
+
+	const formResetHandler = useCallback(() => {
+		name.reset()
+		monthlyPrice.reset()
+		setDescription(DescriptionPension)
+	}, [name, monthlyPrice, DescriptionPension])
+
+	const isFormValid = name.isValid && monthlyPrice.isValid
+	const isConfirmButtonDisabled = !isFormValid
+
+	const closeModal = useCallback(() => {
+		setModalOpen(false)
+	}, [setModalOpen])
 
 	useEffect(() => {
-		if (isSuccess || isError) {
-			resetForm()
+		if (isSuccess) {
+			closeModal()
+			setDescription(DescriptionPension)
+			formResetHandler()
 		}
-	}, [isSuccess, isError])
+	}, [isSuccess, closeModal, setDescription, formResetHandler, DescriptionPension])
+	//   useEffect(() => {
+	//     if (modalOpen) {
+	//       name.setValue(NomPension);
+	//       monthlyPrice.setValue(PrixPension);
+	//       setDescription(DescriptionPension);
+	//     }
+	//   }, [modalOpen, name, monthlyPrice, NomPension, PrixPension, DescriptionPension]);
 
-	const conditionalRendering = () => {
-		if (isLoading) {
-			return <BaseSpinner />
-		} else {
-			return (
-				<>
-					<div
-						style={{ color: '#271503' }}
-						class="modal fade"
-						id={`modalModifPension${IdPension}`}
-						tabindex="-1"
-						role="dialog"
-						aria-labelledby="exampleModalCenterTitle"
-						aria-hidden="true">
-						<div class="modal-dialog modal-dialog-centered" role="document">
-							<div class="modal-content">
-								<div class="modal-header">
-									<h3
-										class="modal-title"
-										id="exampleModalLongTitle"
-										style={{ color: '#271503', textAlign: 'center' }}>
-										Ajouter une nouvelle formule de pension
-									</h3>
-									<i
-										data-bs-dismiss="modal"
-										style={{ fontSize: '30px' }}
-										class="bi bi-x-circle-fill"></i>
-								</div>
-								<div class="modal-body">
-									<form>
-										<div class="form-group" style={{ marginTop: '20px', marginBottom: '20px' }}>
-											<h5>Nom de la pension</h5>
-											<input
-												onBlur={handleInputBlurName}
-												onChange={event => setName(event.target.value)}
-												className={`${!isNameValid ? 'invalid' : ''} form-control `}
-												name="name"
-												required
-												type="text"
-												id="name"
-												placeholder="Ex: Pension Complète"
-												defaultValue={name}
-											/>
-											{!isNameValid && (
-												<p style={{ color: 'red' }}>
-													Veuillez entrer un nom de pension valide.
-												</p>
-											)}
-										</div>
-										<div class="form-group" style={{ marginTop: '20px', marginBottom: '20px' }}>
-											<h5>
-												Prix de la pension{' '}
-												<p
-													style={{
-														fontStyle: 'italic',
-														float: 'right',
-														color: 'lightgray',
-														marginRight: '255px',
-													}}>
-													(En €)
-												</p>{' '}
-											</h5>
-											<input
-												onBlur={handleInputBlurPrice}
-												onChange={event => setMonthlyPrice(event.target.value)}
-												className={`${!isPriceValid ? 'invalid' : ''} form-control `}
-												name="monthlyPrice"
-												required
-												type="number"
-												id="monthlyPrice"
-												min="0"
-												max="10000"
-												placeholder="Ex: 110"
-												defaultValue={monthlyPrice}
-											/>
-											{!isPriceValid && (
-												<p style={{ color: 'red' }}>
-													Veuillez entrer un nombre différent de 0.
-												</p>
-											)}
-										</div>
+	const updatePensionHandler = () => {
+		updatePension({
+			name: name.value,
+			monthlyPrice: monthlyPrice.value,
+			description: description,
+			id: IdPension,
+		})
+	}
 
-										<div className="form-group" style={{ marginTop: '20px', marginBottom: '20px' }}>
-											<h5>Description de la pension </h5>
-											<textarea
-												onChange={event => setDescription(event.target.value)}
-												name="description"
-												className="form-control"
-												id="description"
-												rows="3"
-												placeholder="Décrivez ce que propose votre pension"
-												defaultValue={description}></textarea>
-										</div>
-									</form>
-									<div class="modal-footer">
-										<button
+	return (
+		<>
+			<div
+				style={{ color: '#271503' }}
+				className={`modal fade ${modalOpen ? 'show' : ''}`}
+				id="modalAjouterPension"
+				tabIndex="-1"
+				role="dialog"
+				aria-labelledby="exampleModalCenterTitle"
+				aria-hidden={!modalOpen}
+				onClick={closeModal}>
+				<div className="modal-dialog modal-dialog-centered" role="document">
+					<div className="modal-content">
+						<div className="modal-header">
+							<h3
+								className="modal-title"
+								id="exampleModalLongTitle"
+								style={{ color: '#271503', textAlign: 'center' }}>
+								Ajouter une nouvelle formule de pension
+							</h3>
+							<i
+								data-bs-dismiss="modal"
+								style={{ fontSize: '30px' }}
+								className="bi bi-x-circle-fill"
+								onClick={closeModal}></i>
+						</div>
+						<div className="modal-body">
+							<form>
+								<Form.Group className="mb-3">
+									<Form.Label>Nom de la pension</Form.Label>
+									<Form.Control
+										type="text"
+										placeholder="Ex: Pension complète"
+										name="name"
+										value={name.value}
+										onInput={name.inputHandler}
+										onBlur={name.blurHandler}
+										isInvalid={name.hasError}
+									/>
+									<Form.Control.Feedback type="invalid">{name.errorMessage}</Form.Control.Feedback>
+								</Form.Group>
+								<Form.Group className="mb-3">
+									<Form.Label>
+										Prix de la pension
+										<p
 											style={{
-												borderRadius: '10px',
-												backgroundColor: '#af8d68',
-												borderColor: '#af8d68',
-												color: '#F5F5DC',
-											}}
-											data-bs-dismiss="modal"
-											onClick={updatePensionHandler}>
-											Modifier
-										</button>
-									</div>
-								</div>
+												fontStyle: 'italic',
+												float: 'right',
+												color: 'lightgray',
+												marginRight: '255px',
+											}}>
+											(En €)
+										</p>
+									</Form.Label>
+									<Form.Control
+										type="number"
+										placeholder="Ex: 110"
+										name="number"
+										min="1"
+										max="10000"
+										value={monthlyPrice.value}
+										onInput={monthlyPrice.inputHandler}
+										onBlur={monthlyPrice.blurHandler}
+										isInvalid={monthlyPrice.hasError}
+									/>
+									<Form.Control.Feedback type="invalid">
+										{monthlyPrice.errorMessage}
+									</Form.Control.Feedback>
+								</Form.Group>
+								<Form.Group className="mb-3">
+									<Form.Label>Description de la pension</Form.Label>
+									<Form.Control
+										rows="3"
+										placeholder="Décrivez ce que propose votre pension"
+										value={description}
+										onChange={event => setDescription(event.target.value)}
+									/>
+								</Form.Group>
+							</form>
+							<div className="modal-footer">
+								<button
+									style={{
+										borderRadius: '10px',
+										backgroundColor: '#af8d68',
+										borderColor: '#af8d68',
+										color: '#F5F5DC',
+									}}
+									disabled={isConfirmButtonDisabled}
+									onClick={updatePensionHandler}
+									data-bs-toggle="modal"
+									data-bs-target="#modalAjouterPension">
+									Envoyer
+								</button>
 							</div>
 						</div>
 					</div>
-				</>
-			)
-		}
-	}
-	return conditionalRendering()
+				</div>
+			</div>
+		</>
+	)
 }
 
 export default ModalModifyPension

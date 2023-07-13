@@ -1,25 +1,25 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useAddPensionMutation } from '../../../API/pension.api'
 import useInput from '../../../shared/hooks/use-input'
 import { BaseSpinner } from '../../../shared/ui/BaseSpinner'
 import { Form } from 'react-bootstrap'
-import { useCallback } from 'react'
 import { StableValidationError } from '../../../shared/Model'
 
 function ModalAddPension() {
+	const [modalOpen, setModalOpen] = useState(false)
 	const [addPension, { isLoading, isSuccess }] = useAddPensionMutation()
 
 	const validateName = value => {
 		const trimmedValue = value.trim()
 		if (trimmedValue.length === 0 || trimmedValue.length > 255) {
-			throw new StableValidationError('Le nom de la pension doit contenir entre 1 et 255 caractères ')
+			throw new StableValidationError('Le nom de la pension doit contenir entre 1 et 255 caractères.')
 		}
 	}
 
 	const validateMonthlyPrice = value => {
-		const Price = value
-		if (Price === '0') {
-			throw new StableValidationError('Le prix de la pension ne peut pas valoir 0 ')
+		const price = value
+		if (price === '' || price === 0) {
+			throw new StableValidationError('Le prix de la pension ne peut pas valoir 0.')
 		}
 	}
 
@@ -32,15 +32,20 @@ function ModalAddPension() {
 		name.reset() // Réinitialiser le champ name
 	}, [monthlyPrice, name])
 
-	const isFormValid = name.isValid && monthlyPrice
+	const isFormValid = name.isValid && monthlyPrice.isValid
 	const isConfirmButtonDisabled = !isFormValid
+
+	const closeModal = useCallback(() => {
+		setModalOpen(false)
+	}, [setModalOpen])
 
 	useEffect(() => {
 		if (isSuccess) {
+			closeModal()
 			setDescription('')
 			formResetHandler()
 		}
-	}, [formResetHandler, isSuccess, description])
+	}, [isSuccess, closeModal, setDescription, formResetHandler])
 
 	const addPensionHandler = () => {
 		addPension({
@@ -54,12 +59,13 @@ function ModalAddPension() {
 		<>
 			<div
 				style={{ color: '#271503' }}
-				className="modal fade"
+				className={`modal fade ${modalOpen ? 'show' : ''}`}
 				id="modalAjouterPension"
 				tabIndex="-1"
 				role="dialog"
 				aria-labelledby="exampleModalCenterTitle"
-				aria-hidden="true">
+				aria-hidden={!modalOpen}
+				onClick={closeModal}>
 				<div className="modal-dialog modal-dialog-centered" role="document">
 					<div className="modal-content">
 						<div className="modal-header">
@@ -69,7 +75,11 @@ function ModalAddPension() {
 								style={{ color: '#271503', textAlign: 'center' }}>
 								Ajouter une nouvelle formule de pension
 							</h3>
-							<i data-bs-dismiss="modal" style={{ fontSize: '30px' }} className="bi bi-x-circle-fill"></i>
+							<i
+								data-bs-dismiss="modal"
+								style={{ fontSize: '30px' }}
+								className="bi bi-x-circle-fill"
+								onClick={closeModal}></i>
 						</div>
 						<div className="modal-body">
 							<form>
@@ -77,7 +87,7 @@ function ModalAddPension() {
 									<Form.Label>Nom de la pension </Form.Label>
 									<Form.Control
 										type="text"
-										placeholder="placeholder"
+										placeholder="Ex: Pension complète"
 										name="name"
 										value={name.value}
 										onInput={name.inputHandler}
@@ -133,7 +143,9 @@ function ModalAddPension() {
 										color: '#F5F5DC',
 									}}
 									disabled={isConfirmButtonDisabled}
-									onClick={addPensionHandler}>
+									onClick={addPensionHandler}
+									data-bs-toggle="modal"
+									data-bs-target="#modalAjouterPension">
 									Envoyer
 								</button>
 							</div>
