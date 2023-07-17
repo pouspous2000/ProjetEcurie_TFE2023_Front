@@ -7,7 +7,7 @@ import { StableValidationError } from '../../../shared/Model'
 
 function ModalAddPension() {
 	const [modalOpen, setModalOpen] = useState(false)
-	const [addPension, { isLoading, isSuccess }] = useAddPensionMutation()
+	const [addPension, { isLoading, isSuccess, errorMessage }] = useAddPensionMutation()
 
 	const validateName = value => {
 		const trimmedValue = value.trim()
@@ -28,24 +28,21 @@ function ModalAddPension() {
 	const [description, setDescription] = useState('')
 
 	const formResetHandler = useCallback(() => {
-		monthlyPrice.reset() // Réinitialiser le champ monthlyPrice
-		name.reset() // Réinitialiser le champ name
+		monthlyPrice.reset()
+		name.reset()
 	}, [monthlyPrice, name])
 
 	const isFormValid = name.isValid && monthlyPrice.isValid
-	const isConfirmButtonDisabled = !isFormValid
+	const isConfirmButtonDisabled = !isFormValid && !errorMessage
 
-	const closeModal = useCallback(() => {
-		setModalOpen(false)
-	}, [setModalOpen])
+	const closeModal = useCallback(() => {})
 
 	useEffect(() => {
 		if (isSuccess) {
-			closeModal()
-			setDescription('')
 			formResetHandler()
+			setDescription('')
 		}
-	}, [isSuccess, closeModal, setDescription, formResetHandler])
+	}, [isSuccess, closeModal])
 
 	const addPensionHandler = () => {
 		addPension({
@@ -53,6 +50,8 @@ function ModalAddPension() {
 			monthlyPrice: monthlyPrice.value,
 			description: description,
 		})
+		// setDescription('')
+		// formResetHandler()
 	}
 
 	return (
@@ -98,8 +97,7 @@ function ModalAddPension() {
 								</Form.Group>
 								<Form.Group className="mb-3">
 									<Form.Label>
-										{' '}
-										Prix de la pension{' '}
+										Prix de la pension
 										<p
 											style={{
 												fontStyle: 'italic',
@@ -108,7 +106,7 @@ function ModalAddPension() {
 												marginRight: '255px',
 											}}>
 											(En €)
-										</p>{' '}
+										</p>
 									</Form.Label>
 									<Form.Control
 										type="number"

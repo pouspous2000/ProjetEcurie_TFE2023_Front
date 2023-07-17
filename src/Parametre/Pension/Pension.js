@@ -9,12 +9,10 @@ export const Pension = () => {
 	return (
 		<div>
 			<h2 style={{ width: 'fit-content', marginLeft: '3rem', fontSize: '30px', color: '#CD853F' }}>
-				{' '}
-				Configurations{' '}
+				Configurations
 			</h2>
 
 			<h3 style={{ margin: '35px' }}>
-				{' '}
 				Pensions
 				<button
 					data-toggle="tooltip"

@@ -7,7 +7,7 @@ import { BaseSpinner } from '../../../shared/ui/BaseSpinner'
 import { Stack } from 'react-bootstrap'
 
 function CardPension({ NomPension, PrixPension, DescriptionPension, IdPension }) {
-	const [deletePension, { isLoading, isSuccess, isError, error: errorMessage }] = useDeletePensionMutation()
+	const [deletePension, { isLoading, isSuccess, isError, errorMessage }] = useDeletePensionMutation()
 	const deletePensionHandler = () => {
 		deletePension({ id: IdPension })
 	}

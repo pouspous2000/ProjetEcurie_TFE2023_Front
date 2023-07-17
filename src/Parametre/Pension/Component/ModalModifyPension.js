@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useUpdatePensionMutation } from '../../../API/pension.api'
 import useInput from '../../../shared/hooks/use-input'
-import { BaseSpinner } from '../../../shared/ui/BaseSpinner'
+// import { BaseSpinner } from '../../../shared/ui/BaseSpinner'
 import { Form } from 'react-bootstrap'
 import { StableValidationError } from '../../../shared/Model'
+// import Swal from 'sweetalert2'
 
 function ModalModifyPension({ NomPension, PrixPension, DescriptionPension, IdPension }) {
 	const [modalOpen, setModalOpen] = useState(false)
-	const [updatePension, { isLoading, isSuccess }] = useUpdatePensionMutation()
+	const [updatePension, { isLoading, isSuccess, isError, error: errorMessage }] = useUpdatePensionMutation()
 
 	const validateName = value => {
 		const trimmedValue = value.trim()
@@ -27,34 +28,6 @@ function ModalModifyPension({ NomPension, PrixPension, DescriptionPension, IdPen
 	const monthlyPrice = useInput(value => validateMonthlyPrice(value), PrixPension)
 	const [description, setDescription] = useState(DescriptionPension)
 
-	const formResetHandler = useCallback(() => {
-		name.reset()
-		monthlyPrice.reset()
-		setDescription(DescriptionPension)
-	}, [name, monthlyPrice, DescriptionPension])
-
-	const isFormValid = name.isValid && monthlyPrice.isValid
-	const isConfirmButtonDisabled = !isFormValid
-
-	const closeModal = useCallback(() => {
-		setModalOpen(false)
-	}, [setModalOpen])
-
-	useEffect(() => {
-		if (isSuccess) {
-			closeModal()
-			setDescription(DescriptionPension)
-			formResetHandler()
-		}
-	}, [isSuccess, closeModal, setDescription, formResetHandler, DescriptionPension])
-	//   useEffect(() => {
-	//     if (modalOpen) {
-	//       name.setValue(NomPension);
-	//       monthlyPrice.setValue(PrixPension);
-	//       setDescription(DescriptionPension);
-	//     }
-	//   }, [modalOpen, name, monthlyPrice, NomPension, PrixPension, DescriptionPension]);
-
 	const updatePensionHandler = () => {
 		updatePension({
 			name: name.value,
@@ -62,6 +35,17 @@ function ModalModifyPension({ NomPension, PrixPension, DescriptionPension, IdPen
 			description: description,
 			id: IdPension,
 		})
+		setDescription(DescriptionPension)
+
+		// Gestion des erreurs en décalé ?
+
+		// if (isError){
+		// 	Swal.fire({
+		// 		icon: 'error',
+		// 		title: 'Oops...',
+		// 		text: 'Il semblerait que cette pension existe déjà !',
+		// 	  })
+		// }
 	}
 
 	return (
@@ -69,12 +53,9 @@ function ModalModifyPension({ NomPension, PrixPension, DescriptionPension, IdPen
 			<div
 				style={{ color: '#271503' }}
 				className={`modal fade ${modalOpen ? 'show' : ''}`}
-				id="modalAjouterPension"
+				id={`modalModifPension${IdPension}`}
 				tabIndex="-1"
-				role="dialog"
-				aria-labelledby="exampleModalCenterTitle"
-				aria-hidden={!modalOpen}
-				onClick={closeModal}>
+				role="dialog">
 				<div className="modal-dialog modal-dialog-centered" role="document">
 					<div className="modal-content">
 						<div className="modal-header">
@@ -84,11 +65,7 @@ function ModalModifyPension({ NomPension, PrixPension, DescriptionPension, IdPen
 								style={{ color: '#271503', textAlign: 'center' }}>
 								Ajouter une nouvelle formule de pension
 							</h3>
-							<i
-								data-bs-dismiss="modal"
-								style={{ fontSize: '30px' }}
-								className="bi bi-x-circle-fill"
-								onClick={closeModal}></i>
+							<i data-bs-dismiss="modal" style={{ fontSize: '30px' }} className="bi bi-x-circle-fill"></i>
 						</div>
 						<div className="modal-body">
 							<form>
@@ -151,10 +128,9 @@ function ModalModifyPension({ NomPension, PrixPension, DescriptionPension, IdPen
 										borderColor: '#af8d68',
 										color: '#F5F5DC',
 									}}
-									disabled={isConfirmButtonDisabled}
+									disabled={!name.isValid || !monthlyPrice.isValid}
 									onClick={updatePensionHandler}
-									data-bs-toggle="modal"
-									data-bs-target="#modalAjouterPension">
+									data-bs-dismiss="modal">
 									Envoyer
 								</button>
 							</div>

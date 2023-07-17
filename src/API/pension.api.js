@@ -7,6 +7,7 @@ const pensionApi = apiSlice.injectEndpoints({
 	endpoints: builder => ({
 		getPensions: builder.query({
 			query: () => '/pensions',
+			transformResponse: response => response.sort((a, b) => b.id - a.id),
 			providesTags: [tag],
 		}),
 		addPension: builder.mutation({
