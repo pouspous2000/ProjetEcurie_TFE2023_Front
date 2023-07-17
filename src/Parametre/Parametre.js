@@ -23,7 +23,7 @@ export const Parametre = () => {
 
 	return (
 		<>
-			<Pension />
+			{/* <Pension /> */}
 			<Additive />
 		</>
 	)

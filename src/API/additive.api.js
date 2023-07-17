@@ -6,6 +6,7 @@ const additiveApi = apiSlice.injectEndpoints({
 	endpoints: builder => ({
 		getAdditives: builder.query({
 			query: () => '/additives',
+			transformResponse: response => response.sort((a, b) => b.id - a.id),
 			providesTags: [tag],
 		}),
 		addAdditive: builder.mutation({

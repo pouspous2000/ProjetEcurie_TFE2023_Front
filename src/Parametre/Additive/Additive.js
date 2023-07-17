@@ -1,4 +1,6 @@
 import { useGetAdditivesQuery } from '../../API/additive.api'
+import CardAdditive from './Component/CardAdditive'
+import { ModalAddAdditive } from './Component/ModalAddAdditve'
 
 export const Additive = () => {
 	const { data: additives, isLoading, isSuccess, isError, error } = useGetAdditivesQuery()
@@ -6,21 +8,18 @@ export const Additive = () => {
 	return (
 		<div>
 			<h2 style={{ width: 'fit-content', marginLeft: '3rem', fontSize: '30px', color: '#CD853F' }}>
-				{' '}
-				Configurations{' '}
+				Configurations
 			</h2>
-
 			<h3 style={{ margin: '35px' }}>
-				{' '}
-				Pensions
+				Additifs
 				<button
 					data-toggle="tooltip"
 					data-placement="top"
-					title="Ajouter une pension"
+					title="Ajouter un additif"
 					type="button"
 					class="btn"
 					data-bs-toggle="modal"
-					data-bs-target="#modalAjouterPension"
+					data-bs-target="#modalAddAdditive"
 					style={{
 						backgroundColor: 'transparent',
 						borderColor: 'transparent',
@@ -31,17 +30,15 @@ export const Additive = () => {
 					<i class="bi bi-plus-circle" />
 				</button>
 			</h3>
-			{/* <ModalAddPension /> */}
+			<ModalAddAdditive />
 
 			{additives.map(additive => (
 				<>
-					{/* <CardPension
-						NomPension={additive.name}
-						PrixPension={additive.monthlyPrice}
-						DescriptionPension={additive.description}
-						IdPension={additive.id}
-					/> */}
-					<div> {additive.name} </div>
+					<CardAdditive
+						AdditiveName={additive.name}
+						AdditivePrice={additive.price}
+						AdditiveId={additive.id}
+					/>
 				</>
 			))}
 		</div>
