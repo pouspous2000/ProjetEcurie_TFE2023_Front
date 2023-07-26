@@ -84,24 +84,6 @@ export const Event = () => {
 		},
 	}
 	const createModal = useModal()
-	// const updateModal = useModal(
-	// 	false,
-	// 	additive => {
-	// 		setUpdateAdditive(additive)
-	// 	},
-	// 	() => {
-	// 		setUpdateAdditive(undefined)
-	// 	}
-	// )
-	// const deleteModal = useModal(
-	// 	false,
-	// 	additive => {
-	// 		setDeleteAdditive(additive)
-	// 	},
-	// 	() => {
-	// 		setDeleteAdditive(undefined)
-	// 	}
-	// )
 
 	const conditionalRendering = () => {
 		if (isEventsLoading) {
