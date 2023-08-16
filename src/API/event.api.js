@@ -9,7 +9,7 @@ const eventApi = apiSlice.injectEndpoints({
 			query: () => '/events',
 			providesTags: [tag],
 		}),
-		addEvents: builder.mutation({
+		addEvent: builder.mutation({
 			query: event => ({
 				url: '/events',
 				method: 'POST',
@@ -51,7 +51,7 @@ const eventApi = apiSlice.injectEndpoints({
 export const {
 	useGetEventsQuery,
 	useSubscribeEventMutation,
-	useAddEventsMutation,
+	useAddEventMutation,
 	useUpdateEventMutation,
 	useDeleteEventMutation,
 } = eventApi

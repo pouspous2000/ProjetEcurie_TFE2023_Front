@@ -1,108 +1,155 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
+import { Form } from 'react-bootstrap'
 import { Calendar, momentLocalizer } from 'react-big-calendar'
 import moment from 'moment'
-import { Modal, Button } from 'react-bootstrap'
-import { useSubscribeEventMutation, useGetEventsQuery } from '../API/event.api'
-
+import 'moment/locale/fr'
 import { BaseSpinner } from '../shared/ui/BaseSpinner'
 import { BaseErrorAlert } from '../shared/ui/BaseErrorAlert'
-
 import 'react-big-calendar/lib/css/react-big-calendar.css'
-import 'moment/locale/fr'
-import { ModalAddEvent } from './Component/ModalAddEvent'
+import { ModalGeneric } from './Component/ModalGeneric'
 import useModal from '../shared/hooks/use-modal'
+import { useGetEventablesQuery } from '../API/eventable.api'
 
 moment.locale('fr')
 const localizer = momentLocalizer(moment)
 
 export const Event = () => {
-	const {
-		data: events,
-		isLoading: isEventsLoading,
-		isSuccess: isEventsSuccess,
-		isError: isEventsError,
-		error: eventsError,
-	} = useGetEventsQuery()
-	const [
-		subscribeEvent,
-		{
-			isLoading: isSubscribeEventLoading,
-			isSuccess: isSubscribeEventSuccess,
-			isError: isSubscribeEventError,
-			error: subscribeEventError,
-			data: subscribeEventData,
-		},
-	] = useSubscribeEventMutation()
-
-	const [isModalOpen, setIsModalOpen] = useState(false)
 	const [selectedEvent, setSelectedEvent] = useState(null)
 
-	useEffect(() => {
-		if (isSubscribeEventSuccess) {
-			setSelectedEvent({
-				title: subscribeEventData.name,
-				id: subscribeEventData.id,
-				start: new Date(subscribeEventData.startingAt),
-				end: new Date(subscribeEventData.endingAt),
-				description: subscribeEventData.description,
-				creator: subscribeEventData.creator,
-				participants: subscribeEventData.participants,
-			})
-			console.log(subscribeEventData)
-		}
-	}, [isSubscribeEventSuccess, subscribeEventData])
-
-	const handelParticipantEvent = event => {
-		subscribeEvent({
-			id: event,
-		})
-	}
+	const createModal = useModal()
 
 	const handleEventClick = event => {
 		setSelectedEvent(event)
-		setIsModalOpen(true)
+		createModal.openHandler()
 	}
 
-	const handleModalClose = () => {
-		setSelectedEvent(null)
-		setIsModalOpen(false)
+	const {
+		data: eventables,
+		isSuccess: isGetEventablesSuccess,
+		isLoading: isGetEventableLoading,
+		isError: isGetEventableError,
+		error: getEventableError,
+	} = useGetEventablesQuery()
+
+	const uniqueCategoriesSet = new Set(eventables && eventables.map(eventable => eventable.eventable))
+	const uniqueCategories = [...uniqueCategoriesSet]
+	const [selectedCategory, setSelectedCategory] = useState('All')
+
+	const handleCategoryChange = event => {
+		setSelectedCategory(event.target.value)
 	}
 
-	const customModalStyle = {
-		overlay: {
-			backgroundColor: 'rgba(0, 0, 0, 0.5)',
-			zIndex: 9999,
-		},
-		content: {
-			backgroundColor: '#fff',
-			borderRadius: '5px',
-			padding: '20px',
-			opacity: 1,
-			height: '50%',
-			width: '50%',
-			margin: 'auto',
-		},
+	const conditionalRenderingOnId = id => {
+		if (id !== 1) {
+			return (
+				<>
+					{createModal.isVisible && (
+						<>
+							<ModalGeneric
+								status="View"
+								id={selectedEvent.id}
+								categories={uniqueCategories}
+								category={selectedEvent.eventable}
+								autor={false}
+								start={selectedEvent.start}
+								creator={selectedEvent.creator}
+								title={selectedEvent.title}
+								participant={selectedEvent.participants}
+								descript={selectedEvent.description}
+								dateStart={moment(selectedEvent.start).format('DD/MM/YYYY')}
+								dateEnd={moment(selectedEvent.end).format('DD/MM/YYYY')}
+								hourStart={moment(selectedEvent.start).format('HH:mm')}
+								hourEnd={moment(selectedEvent.end).format('HH:mm')}
+								modal={createModal}
+							/>
+						</>
+					)}
+				</>
+			)
+		} else if (id === 1) {
+			return (
+				<>
+					{createModal.isVisible && (
+						<ModalGeneric
+							status="AutorView"
+							id={selectedEvent.id}
+							categories={uniqueCategories}
+							category={selectedEvent.eventable}
+							autor={true}
+							start={selectedEvent.start}
+							creator={selectedEvent.creator}
+							title={selectedEvent.title}
+							participant={selectedEvent.participants}
+							descript={selectedEvent.description}
+							dateStart={moment(selectedEvent.start).format('DD/MM/YYYY')}
+							dateEnd={moment(selectedEvent.end).format('DD/MM/YYYY')}
+							hourStart={moment(selectedEvent.start).format('HH:mm')}
+							hourEnd={moment(selectedEvent.end).format('HH:mm')}
+							modal={createModal}
+						/>
+					)}
+				</>
+			)
+		}
 	}
-	const createModal = useModal()
+
+	const getFilteredEvents = category => {
+		return (
+			eventables &&
+			eventables.filter(eventable => {
+				if (category === 'All') {
+					return (
+						eventable.eventable === 'event' ||
+						eventable.eventable === 'competition' ||
+						(eventable.eventable === 'lesson' &&
+							(eventable.creator.userId === 1 ||
+								(eventable.participants &&
+									eventable.participants.some(participant => participant.userId === 1)))) ||
+						(eventable.eventable === 'task' &&
+							(eventable.creator.userId === 1 || eventable.employee.userId === 1))
+					)
+				} else if (category === 'event') {
+					return eventable.eventable === 'event'
+				} else if (category === 'competition') {
+					return eventable.eventable === 'competition'
+				} else if (category === 'task') {
+					return (
+						eventable.eventable === 'task' &&
+						(eventable.creator.userId === 1 || eventable.employee.userId === 1)
+					)
+				} else if (category === 'lesson') {
+					return (
+						eventable.eventable === 'lesson' &&
+						(eventable.creator.userId === 1 ||
+							(eventable.participants &&
+								eventable.participants.some(participant => participant.userId === 1)))
+					)
+				}
+				return false
+			})
+		)
+	}
 
 	const conditionalRendering = () => {
-		if (isEventsLoading) {
+		if (isGetEventableLoading) {
 			return <BaseSpinner />
-		} else if (isEventsError) {
-			return <BaseErrorAlert message={eventsError} />
-		} else if (isEventsSuccess) {
-			const formattedEvents = events.map(event => ({
-				title: event.name,
-				id: event.id,
-				start: new Date(event.startingAt),
-				end: new Date(event.endingAt),
-				description: event.description,
-				creator: event.creator,
-				participants: event.participants,
+		} else if (isGetEventableError) {
+			return <BaseErrorAlert message={getEventableError} />
+		} else if (isGetEventablesSuccess) {
+			const filteredEvents = getFilteredEvents(selectedCategory)
+			console.log(filteredEvents)
+			const formattedEvents = filteredEvents.map(eventable => ({
+				title: eventable.name,
+				id: eventable.id,
+				start: new Date(eventable.startingAt),
+				end: new Date(eventable.endingAt),
+				description: eventable.description,
+				creator: eventable.creator,
+				participants: eventable.participants,
 			}))
 
-			const eventStyleGetter = (event, start, end, isSelected) => {
-				const backgroundColor = event.color || '#271503' // Couleur par défaut si aucun couleur n'est spécifiée pour l'événement
+			const eventStyleGetter = (eventable, isSelected) => {
+				const backgroundColor = eventable.color || '#271503' // Couleur par défaut si aucune couleur n'est spécifiée pour l'événement
 
 				return {
 					style: {
@@ -127,59 +174,10 @@ export const Event = () => {
 						onSelectEvent={handleEventClick}
 						eventPropGetter={eventStyleGetter}
 					/>
-					<Modal show={isModalOpen} onHide={handleModalClose}>
-						<Modal.Header closeButton>
-							<Modal.Title>{selectedEvent && selectedEvent.title}</Modal.Title>
-						</Modal.Header>
-						<Modal.Body>
-							{selectedEvent && (
-								<div key={selectedEvent.id}>
-									<h5> Description</h5>
-									<p>{selectedEvent.description}</p>
-									<h5>Début :</h5>
-									<p> {selectedEvent.start.toLocaleString()}</p>
-									<h5>Fin :</h5>
-									<p> {selectedEvent.end.toLocaleString()}</p>
-									{selectedEvent.creator && (
-										<div key={selectedEvent.creator.userId}>
-											<h5>Créateur:</h5>
-											<p>
-												{' '}
-												{selectedEvent.creator.firstName} {selectedEvent.creator.lastName}
-											</p>
-										</div>
-									)}
-									<h5>Participants:</h5>
-									{selectedEvent.participants &&
-										selectedEvent.participants.map(participant => (
-											<div key={participant.userId}>
-												<p>
-													- {participant.firstName} {participant.lastName}
-												</p>
-											</div>
-										))}
-								</div>
-							)}
-						</Modal.Body>
-						<Modal.Footer>
-							{selectedEvent && selectedEvent.start > new Date() ? (
-								<Button
-									variant="secondary"
-									onClick={() => handelParticipantEvent(selectedEvent && selectedEvent.id)}>
-									{/* TODO : userId hardcodé !  */}
-									{selectedEvent &&
-									selectedEvent.participants.find(participant => participant.userId === 1)
-										? 'Desinscrire'
-										: 'Participer'}
-								</Button>
-							) : (
-								''
-							)}
-							<Button variant="secondary" onClick={handleModalClose}>
-								Close
-							</Button>
-						</Modal.Footer>
-					</Modal>
+
+					{selectedEvent && (
+						<>{selectedEvent.creator && <>{conditionalRenderingOnId(selectedEvent.creator.userId)}</>}</>
+					)}
 				</div>
 			)
 		}
@@ -192,9 +190,11 @@ export const Event = () => {
 			</h2>
 
 			<h3 style={{ margin: '35px' }}>
-				Evènements
+				Évènements
 				<button
-					onClick={createModal.openHandler}
+					onClick={() => {
+						createModal.openHandler()
+					}}
 					title="Ajouter un additif"
 					type="button"
 					className="btn"
@@ -208,13 +208,26 @@ export const Event = () => {
 					<i className="bi bi-plus-circle" />
 				</button>
 			</h3>
+			<Form>
+				<Form.Group className="mb-3">
+					<Form.Label> Filtre Catégories </Form.Label>
+					<Form.Select defaultValue={selectedCategory} onChange={handleCategoryChange} className="mr-3 ml-3">
+						<option key={1} defaultValue="All">
+							All
+						</option>
+						{uniqueCategories &&
+							uniqueCategories.map((category, index) => (
+								<option key={Number(index) + 1} defaultValue={category}>
+									{category}
+								</option>
+							))}
+					</Form.Select>
+				</Form.Group>
+			</Form>
 
-			{createModal.isVisible && <ModalAddEvent modal={createModal} />}
-
-			{/* {updateModal.isVisible && <AdditiveUpdate additive={updateAdditive} modal={updateModal} />} */}
-
-			{/* {deleteModal.isVisible && <AdditiveDelete additive={deleteAdditive} modal={deleteModal} />} */}
-
+			{createModal.isVisible && (
+				<ModalGeneric modal={createModal} status="Add" autor={true} categories={uniqueCategories} />
+			)}
 			{conditionalRendering()}
 		</div>
 	)
