@@ -1,11 +1,45 @@
-import ModalAddPension from './Component/ModalAddPension'
-import CardPension from './Component/CardPension'
-
+import { ModalAddUpdatePension } from './Component/ModalAddUpdatePension'
+import { CardPension } from './Component/CardPension'
+import { BaseSpinner } from '../../shared/ui/BaseSpinner'
+import { BaseErrorAlert } from '../../shared/ui/BaseErrorAlert'
+import useModal from '../../shared/hooks/use-modal'
 import { useGetPensionsQuery } from '../../API/pension.api'
 
 export const Pension = () => {
-	const { data: pensions, isLoading, isSuccess, isError, error } = useGetPensionsQuery()
+	const {
+		data: pensions,
+		isLoading: isGetPensionsLoading,
+		isSuccess: isGetPensionsSuccess,
+		isError: isGetPensionsError,
+		error: getPensionsError,
+	} = useGetPensionsQuery()
 
+	const createModal = useModal()
+
+	const conditionalRendering = () => {
+		if (isGetPensionsLoading) {
+			return <BaseSpinner />
+		} else if (isGetPensionsError) {
+			return <BaseErrorAlert message={getPensionsError} />
+		} else if (isGetPensionsSuccess) {
+			return (
+				<>
+					{pensions.map(pension => (
+						<>
+							<CardPension
+								PensionName={pension.name}
+								PensionPrice={pension.monthlyPrice}
+								PensionDescription={pension.description}
+								PensionId={pension.id}
+							/>
+						</>
+					))}
+				</>
+			)
+		} else {
+			return <p>Pas bon ... </p>
+		}
+	}
 	return (
 		<div>
 			<h2 style={{ width: 'fit-content', marginLeft: '3rem', fontSize: '30px', color: '#CD853F' }}>
@@ -13,15 +47,12 @@ export const Pension = () => {
 			</h2>
 
 			<h3 style={{ margin: '35px' }}>
-				Pensions
+				Additifs
 				<button
-					data-toggle="tooltip"
-					data-placement="top"
+					onClick={() => createModal.openHandler()}
 					title="Ajouter une pension"
 					type="button"
-					class="btn"
-					data-bs-toggle="modal"
-					data-bs-target="#modalAjouterPension"
+					className="btn"
 					style={{
 						backgroundColor: 'transparent',
 						borderColor: 'transparent',
@@ -32,18 +63,8 @@ export const Pension = () => {
 					<i class="bi bi-plus-circle" />
 				</button>
 			</h3>
-			<ModalAddPension />
-
-			{pensions.map(pension => (
-				<>
-					<CardPension
-						NomPension={pension.name}
-						PrixPension={pension.monthlyPrice}
-						DescriptionPension={pension.description}
-						IdPension={pension.id}
-					/>
-				</>
-			))}
+			{createModal.isVisible && <ModalAddUpdatePension modal={createModal} />}
+			{conditionalRendering()}
 		</div>
 	)
 }
