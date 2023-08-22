@@ -137,7 +137,6 @@ export const Event = () => {
 			return <BaseErrorAlert message={getEventableError} />
 		} else if (isGetEventablesSuccess) {
 			const filteredEvents = getFilteredEvents(selectedCategory)
-			console.log(filteredEvents)
 			const formattedEvents = filteredEvents.map(eventable => ({
 				title: eventable.name,
 				id: eventable.id,
