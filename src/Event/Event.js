@@ -225,7 +225,10 @@ export const Event = () => {
 			</Form>
 
 			{createModal.isVisible && (
-				<ModalGeneric modal={createModal} status="Add" autor={true} categories={uniqueCategories} />
+				<>
+					<ModalGeneric modal={createModal} status="Add" isAutor={true} categories={uniqueCategories} />
+					console.log(uniqueCategories)
+				</>
 			)}
 			{conditionalRendering()}
 		</div>

@@ -1,8 +1,9 @@
 // import Pension from './Pension/Pension'
-import { Parametre } from './Parametre/Parametre'
+// import { Parametre } from './Parametre/Parametre'
+import { Event } from './Event/Event'
 
 function App() {
-	return <Parametre />
+	return <Event />
 }
 
 export default App

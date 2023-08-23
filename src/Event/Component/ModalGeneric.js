@@ -20,6 +20,7 @@ import {
 	useUpdateTaskMutation,
 	useDeleteTaskMutation,
 } from '../../API/task.api'
+
 import { useAddLessonMutation, useUpdateLessonMutation, useDeleteLessonMutation } from '../../API/lesson.api'
 import validationConstants from './ValidationConstante'
 import moment from 'moment'
@@ -172,6 +173,12 @@ export const ModalGeneric = props => {
 		}
 	}
 
+	useEffect(() => {
+		if (isAddEventSuccess || isAddTaskSuccess || isAddCompetitionSuccess) {
+			props.modal.closeHandler()
+		}
+	}, [isAddEventSuccess, isAddTaskSuccess, isAddCompetitionSuccess, props])
+
 	const isFormValid = !(
 		name.hasError ||
 		description.hasError ||
@@ -184,7 +191,7 @@ export const ModalGeneric = props => {
 	//  __________SUBSCRIBE_______________
 	const [subscribeEvent, { isSuccess: isSubscribeEventSuccess }] = useSubscribeEventMutation()
 	const [subscribeTask, { isSuccess: isSubscribeTaskSuccess }] = useSubscribeTaskMutation()
-	const [subscribeComptition, { isSuccess: isSubscribeCompetitionSuccess }] = useSubscribeCompetitionMutation()
+	const [subscribeCompetition, { isSuccess: isSubscribeCompetitionSuccess }] = useSubscribeCompetitionMutation()
 
 	const handelParticipant = eventId => {
 		if (category === 'event')
@@ -196,7 +203,7 @@ export const ModalGeneric = props => {
 				id: eventId,
 			})
 		} else if (category === 'competion') {
-			subscribeComptition({
+			subscribeCompetition({
 				id: eventId,
 			})
 		}
@@ -331,6 +338,7 @@ export const ModalGeneric = props => {
 
 	const conditionalRendering = () => {
 		if (statusConnected === 'Add') {
+			console.log('Add')
 			return (
 				<Button variant="secondary" disabled={!isFormValid || !isTimeValid()} onClick={addHandler}>
 					Ajouter
@@ -610,5 +618,14 @@ ModalGeneric.defaultProps = {
 	hourStart: '',
 	hourEnd: '',
 	title: '',
-	autor: '',
+	isAutor: '',
+	statusConnected: '',
+	status: '',
+	creator: '',
+	client: '',
+	categories: '',
+	category: '',
+	employee: '',
+	remark: '',
+	id: '',
 }
