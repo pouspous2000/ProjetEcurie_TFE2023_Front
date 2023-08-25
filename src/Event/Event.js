@@ -9,11 +9,13 @@ import 'react-big-calendar/lib/css/react-big-calendar.css'
 import { ModalGeneric } from './Component/ModalGeneric'
 import useModal from '../shared/hooks/use-modal'
 import { useGetEventablesQuery } from '../API/eventable.api'
+import { getFilteredEvents, conditionalColor, views, conditionalRenderingOnId} from '../Event/EventUtils'
 
 moment.locale('fr')
 const localizer = momentLocalizer(moment)
 
 export const Event = () => {
+
 	const [selectedEvent, setSelectedEvent] = useState(null)
 
 	const createModal = useModal()
@@ -22,11 +24,6 @@ export const Event = () => {
 		setSelectedEvent(event)
 		createModal.openHandler()
 	}
-
-	const views = {
-		month: true,
-		agenda: true
-	};
 
 	const {
 		data: eventables,
@@ -44,139 +41,13 @@ export const Event = () => {
 		setSelectedCategory(event.target.value)
 	}
 
-	const conditionalRenderingOnId = (id, eventable) => {
-		let modalContent = null
-		if (eventable === 'event' || eventable === 'competition') {
-			modalContent = (
-
-				<ModalGeneric
-					id={selectedEvent.id}
-					title={selectedEvent.title}
-					dateStart={moment(selectedEvent.start).format('DD/MM/YYYY')}
-					dateEnd={moment(selectedEvent.end).format('DD/MM/YYYY')}
-					hourStart={moment(selectedEvent.start).format('HH:mm')}
-					hourEnd={moment(selectedEvent.end).format('HH:mm')}
-					descript={selectedEvent.description}
-					category={selectedEvent.category}
-					isAutor={id === 1}
-					type={id === 1 ? "AutorView" : "View"}
-					categories={uniqueCategories}
-					modal={createModal}
-					participants={selectedEvent.participants}
-					creator={selectedEvent.creator}
-				/>
-			)
-
-		} else if (eventable === 'lesson') {
-			modalContent = (
-				<ModalGeneric
-					id={selectedEvent.id}
-					title={selectedEvent.title}
-					dateStart={moment(selectedEvent.start).format('DD/MM/YYYY')}
-					dateEnd={moment(selectedEvent.end).format('DD/MM/YYYY')}
-					hourStart={moment(selectedEvent.start).format('HH:mm')}
-					hourEnd={moment(selectedEvent.end).format('HH:mm')}
-					status={selectedEvent.status}
-					category={selectedEvent.category}
-					isAutor={id === 1}
-					type={id === 1 ? "AutorView" : "View"}
-					categories={uniqueCategories}
-					modal={createModal}
-					creator={selectedEvent.creator}
-					client={selectedEvent.client}
-				/>
-			)
-		} else if (eventable === 'task') {
-			modalContent = (
-				<ModalGeneric
-					id={selectedEvent.id}
-					title={selectedEvent.title}
-					dateStart={moment(selectedEvent.start).format('DD/MM/YYYY')}
-					dateEnd={moment(selectedEvent.end).format('DD/MM/YYYY')}
-					hourStart={moment(selectedEvent.start).format('HH:mm')}
-					hourEnd={moment(selectedEvent.end).format('HH:mm')}
-					status={selectedEvent.status}
-					remark={selectedEvent.remak}
-					category={selectedEvent.category}
-					isAutor={id === 1}
-					type={id === 1 ? "AutorView" : "View"}
-					categories={uniqueCategories}
-					modal={createModal}
-					creator={selectedEvent.creator}
-					employee={selectedEvent.employee}
-					descript = {selectedEvent.description}
-				/>
-			)
-		}
-		return createModal.isVisible ? <>{modalContent}</> : null;
-	}
-
-	const getFilteredEvents = category => {
-		return (
-			eventables &&
-			eventables.filter(eventable => {
-				if (category === 'tous les évènements') {
-					return (
-						eventable.eventable === 'event' ||
-						eventable.eventable === 'competition' ||
-						(eventable.eventable === 'lesson' &&
-							(eventable.creator.userId === 1 ||
-								(eventable.participants &&
-									eventable.participants.some(participant => participant.userId === 1)))) ||
-						(eventable.eventable === 'task' &&
-							(eventable.creator.userId === 1 || eventable.employee.userId === 1))
-					)
-				} else if (category === 'event') {
-					return eventable.eventable === 'event'
-				} else if (category === 'competition') {
-					return eventable.eventable === 'competition'
-				} else if (category === 'task') {
-					return (
-						eventable.eventable === 'task' &&
-						(eventable.creator.userId === 1 || eventable.employee.userId === 1)
-					)
-				} else if (category === 'lesson') {
-					return (
-						eventable.eventable === 'lesson' &&
-						(eventable.creator.userId === 1 ||
-							(eventable.participants &&
-								eventable.participants.some(participant => participant.userId === 1)))
-					)
-				} else if (category === 'tous mes évènements') {
-					return (
-						eventable && eventable.creator.userId === 1
-					)
-
-				}
-				return false
-			})
-		)
-	}
-	const conditionalColor = envent => {
-
-		if (envent === 'event') {
-			return '#271503'
-		} else if (envent === 'competition') {
-
-			return '#900C3F'
-		} else if (envent === 'lesson') {
-
-			return '#FF5733'
-		} else if (envent === 'task') {
-
-			return '#94D5DC'
-		}
-		return '#FFC300'
-
-	}
-
 	const conditionalRendering = () => {
 		if (isGetEventableLoading) {
 			return <BaseSpinner />
 		} else if (isGetEventableError) {
 			return <BaseErrorAlert message={getEventableError} />
 		} else if (isGetEventablesSuccess) {
-			const filteredEvents = getFilteredEvents(selectedCategory)
+			const filteredEvents = getFilteredEvents( selectedCategory, eventables )
 			const formattedEvents = filteredEvents && filteredEvents.map(eventable => ({
 				category: eventable.eventable,
 				title: eventable.name === undefined ? 'Cours' : eventable.name,
@@ -189,7 +60,6 @@ export const Event = () => {
 					{
 						description: eventable.description,
 						participants: eventable.participants
-
 					}
 					:
 					eventable && eventable.eventable === 'task' ?
@@ -197,10 +67,8 @@ export const Event = () => {
 							remark: eventable.remark,
 							status: eventable.status,
 							employee: eventable.employee,
-							description: eventable.description,
-							
+							description: eventable.description,	
 						}
-			
 						:
 						{
 							status: eventable.status,
@@ -210,8 +78,8 @@ export const Event = () => {
 			}));
 
 			const eventStyleGetter = (eventables, isSelected) => {
-				const backgroundColor = conditionalColor(eventables.category); // Appel de la fonction pour obtenir la couleur
-
+				const backgroundColor = conditionalColor(eventables.category)
+				
 				return {
 					style: {
 						backgroundColor,
@@ -238,11 +106,10 @@ export const Event = () => {
 					/>
 
 					{selectedEvent && (
-
 						<>
 							{selectedEvent.creator &&
 								<>
-									{conditionalRenderingOnId(selectedEvent.creator.userId, selectedEvent.category)}
+									{conditionalRenderingOnId(selectedEvent.creator.userId, selectedEvent.category, selectedEvent, uniqueCategories, createModal)}
 								</>
 							}
 						</>

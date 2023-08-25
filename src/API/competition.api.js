@@ -7,19 +7,19 @@ const CompetitionApi = apiSlice.injectEndpoints({
 	endpoints: builder => ({
 		addCompetition: builder.mutation({
 			query: competition => ({
-				url: '/comptitions',
+				url: '/competitions',
 				method: 'POST',
 				body: competition,
 			}),
 			invalidatesTags: [tag],
 		}),
 		getCompetition: builder.query({
-			query: competition => `/comptitions/${competition.id}`,
+			query: competition => `/competitions/${competition.id}`,
 			providesTags: [tag],
 		}),
 		updateCompetition: builder.mutation({
 			query: competition => ({
-				url: `/comptitions/${competition.id}`,
+				url: `/competitions/${competition.id}`,
 				method: 'PUT',
 				body: competition,
 			}),
@@ -27,7 +27,7 @@ const CompetitionApi = apiSlice.injectEndpoints({
 		}),
 		deleteCompetition: builder.mutation({
 			query: ({ id }) => ({
-				url: `/comptitions/${id}`,
+				url: `/competitions/${id}`,
 				method: 'DELETE',
 				body: id,
 			}),
@@ -35,7 +35,7 @@ const CompetitionApi = apiSlice.injectEndpoints({
 		}),
 		subscribeCompetition: builder.mutation({
 			query: competition => ({
-				url: `/comptitions/${competition.id}`,
+				url: `/competitions/${competition.id}`,
 				method: 'POST',
 				body: {},
 			}),
