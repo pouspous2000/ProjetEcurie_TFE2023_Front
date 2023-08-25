@@ -104,6 +104,7 @@ export const Event = () => {
 					modal={createModal}
 					creator={selectedEvent.creator}
 					employee={selectedEvent.employee}
+					descript = {selectedEvent.description}
 				/>
 			)
 		}
@@ -195,8 +196,11 @@ export const Event = () => {
 						{
 							remark: eventable.remark,
 							status: eventable.status,
-							employee: eventable.employee
+							employee: eventable.employee,
+							description: eventable.description,
+							
 						}
+			
 						:
 						{
 							status: eventable.status,

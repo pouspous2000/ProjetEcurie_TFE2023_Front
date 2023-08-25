@@ -27,6 +27,8 @@ import { useAddLessonMutation, useUpdateLessonMutation, useDeleteLessonMutation 
 import validationConstants from './ValidationConstante'
 import moment from 'moment'
 
+
+
 const createModalProptypes = {
 	modal: PropTypes.shape({
 		isVisible: PropTypes.bool,
@@ -86,9 +88,14 @@ export const ModalGeneric = props => {
 	}
 
 	const getFormattedDateTime = (date, time) => {
-		const formattedTime = moment(time, 'HH:mm').format('HH:mm:ss')
+		const formattedTime = moment(time, 'HH:mm').subtract(2, 'hours').format('HH:mm:ss')
 		return `${date}T${formattedTime}.000Z`
 	}
+	// const getFormattedDateTime = (date, time) => {
+	// 	const formattedTime = moment(time, 'HH:mm').format('HH:mm:ss');
+	// 	return moment.tz(`${date} ${formattedTime}`, 'DD/MM/YYYY HH:mm:ss', 'Europe/Paris').toISOString();
+	// }
+
 	// ---------CatégoriesEventable-----------
 	const [selectedCategory, setSelectedCategory] = useState(type === 'Add' ? 'event' : categories)
 	const handleCategoryChange = event => {
@@ -98,7 +105,10 @@ export const ModalGeneric = props => {
 	const [selectedEmployee, setSelectedEmployee] = useState("")
 	const handleEmployeeChange = employee => {
 		setSelectedEmployee(employee.target.value)
-		console.log(employee)
+	}
+	const [selectedStatus, setSelectedStatus] = useState("")
+	const handleSatusChange = status => {
+		setSelectedStatus(status.target.value)
 	}
 
 	// ---------Validation des inputs---------
@@ -224,14 +234,11 @@ export const ModalGeneric = props => {
 		}
 	}
 
-
 	useEffect(() => {
 		if (isSubscribeEventSuccess || isSubscribeTaskSuccess || isSubscribeCompetitionSuccess) {
 			props.modal.closeHandler()
 		}
 	}, [isSubscribeEventSuccess, isSubscribeTaskSuccess, isSubscribeCompetitionSuccess, props])
-
-
 
 	//  __________UPDATE_______________
 
@@ -241,26 +248,58 @@ export const ModalGeneric = props => {
 	const [updateLesson, { isSuccess: isUpdateLessonSuccess }] = useUpdateLessonMutation()
 
 	const updateHandler = () => {
-		let eventData = {
-			id: id,
-			name: name.value === '' ? title : name.value,
-			description: description === '' ? descript : description,
-			startingAt: `${moment(dateStart, 'DD/MM/YYYY').format('YYYY-MM-DD')}T${moment(hourStart, 'HH:mm').format('HH:mm:ss')}.000Z`,
-			endingAt: `${moment(dateEnd, 'DD/MM/YYYY').format('YYYY-MM-DD')}T${moment(hourEnd, 'HH:mm').format('HH:mm:ss')}.000Z`,
-		};
-
 		if (category === 'event') {
-			eventData.participants = [];
-			updateEvent(eventData);
+			updateEvent({
+				id: id,
+				name: name.value === '' ? title : name.value,
+				description: description === '' ? descript : description,
+				startingAt: `${moment(dateStart, 'DD/MM/YYYY').format('YYYY-MM-DD')}T${moment(
+					hourStart,
+					'HH:mm'
+				).format('HH:mm:ss')}.000Z`,
+				endingAt: `${moment(dateEnd, 'DD/MM/YYYY').format('YYYY-MM-DD')}T${moment(
+					hourEnd,
+					'HH:mm'
+				).format('HH:mm:ss')}.000Z`,
+				participants: props.participant,
+			});
 		} else if (category === 'task') {
-			eventData.employeeId = props.employee.userId;
-			eventData.remark = remarkTask;
-			updateTask(eventData);
-		} else if (category === 'competion') {
-			eventData.participants = [];
-			updateCompetition(eventData);
+			updateTask({
+				creatorId: 1,
+				id: id,
+				name: name.value === '' ? title : name.value,
+				description: description === '' ? descript : description,
+				startingAt: `${moment(dateStart, 'DD/MM/YYYY').format('YYYY-MM-DD')}T${moment(
+					hourStart,
+					'HH:mm'
+				).format('HH:mm:ss')}.000Z`,
+				endingAt: `${moment(dateEnd, 'DD/MM/YYYY').format('YYYY-MM-DD')}T${moment(
+					hourEnd,
+					'HH:mm'
+				).format('HH:mm:ss')}.000Z`,
+				participants: [],
+				employeeId: props.employee.userId,
+				remark: remarkTask,
+				status: selectedStatus === "" ? status : selectedStatus
+			});
+		} else if (category === 'competition') {
+			updateCompetition({
+				id: id,
+				name: name.value === '' ? title : name.value,
+				description: description === '' ? descript : description,
+				startingAt: `${moment(dateStart, 'DD/MM/YYYY').format('YYYY-MM-DD')}T${moment(
+					hourStart,
+					'HH:mm'
+				).format('HH:mm:ss')}.000Z`,
+				endingAt: `${moment(dateEnd, 'DD/MM/YYYY').format('YYYY-MM-DD')}T${moment(
+					hourEnd,
+					'HH:mm'
+				).format('HH:mm:ss')}.000Z`,
+				participants: props.participant,
+			});
 		} else if (category === 'lesson') {
 			updateLesson({
+				id: id,
 				clientId: props.client.userId,
 				startingAt: `${moment(dateStart, 'DD/MM/YYYY').format('YYYY-MM-DD')}T${moment(
 					hourStart,
@@ -269,7 +308,8 @@ export const ModalGeneric = props => {
 				endingAt: `${moment(dateEnd, 'DD/MM/YYYY').format('YYYY-MM-DD')}T${moment(
 					hourEnd,
 					'HH:mm'
-				).format('HH:mm:ss')}.000Z`
+				).format('HH:mm:ss')}.000Z`,
+				status: selectedStatus === "" ? status : selectedStatus
 			});
 		}
 	};
@@ -318,6 +358,95 @@ export const ModalGeneric = props => {
 			props.modal.closeHandler()
 		}
 	}, [props, isAddEventSuccess])
+
+	const conditionalRenderingTaskStatus = () => {
+		if (props.creator.userId === 1 && type !== 'Add') {
+			console.log(props.employee.userId)
+
+			return (
+				<Form.Group className="mb-3">
+					<Form.Label>Status : </Form.Label>
+					<Form.Select defaultValue={status} onChange={handleSatusChange}>
+						<option key={5} value={status}>
+							{status}
+						</option>
+						<option key={6} value='CANCELLED'>
+							CANCELLED
+						</option>
+					</Form.Select>
+				</Form.Group>
+			)
+
+		} else if (props.employee.userId === 3) {
+			if (status === 'PENDING') {
+				return (
+					<Form.Group className="mb-3">
+						<Form.Label>Status : </Form.Label>
+						<Form.Select defaultValue={status} onChange={handleSatusChange}>
+							<option key={5} value={status}>
+								{status}
+							</option>
+							<option key={6} value='CONFIRMED'>
+								CONFIRMED
+							</option>
+						</Form.Select>
+					</Form.Group>
+				)
+			} else if (status === 'CONFIRMED') {
+				return (
+					<Form.Group className="mb-3">
+						<Form.Label>Status : </Form.Label>
+						<Form.Select defaultValue={status} onChange={handleSatusChange}>
+							<option key={5} value={status}>
+								{status}
+							</option>
+							<option key={6} value='IN PROGRESS'>
+								IN PROGRESS
+							</option>
+							<option key={7} value='BLOCKED'>
+								BLOCKED
+							</option>
+						</Form.Select>
+					</Form.Group>
+
+				)
+			} else if (status === 'IN PROGRESS') {
+				return (
+					<Form.Group className="mb-3">
+						<Form.Label>Status : </Form.Label>
+						<Form.Select defaultValue={status} onChange={handleSatusChange}>
+							<option key={5} value={status}>
+								{status}
+							</option>
+							<option key={6} value='IN PROGRESS'>
+								IN PROGRESS
+							</option>
+							<option key={7} value='BLOCKED'>
+								BLOCKED
+							</option>
+						</Form.Select>
+					</Form.Group>
+
+				)
+			} else if (status === 'BLOCKED') {
+				return (
+					<Form.Group className="mb-3">
+						<Form.Label>Status : </Form.Label>
+						<Form.Select defaultValue={status} onChange={handleSatusChange}>
+							<option key={5} value={status}>
+								{status}
+							</option>
+							<option key={6} value='COMPLETED'>
+								COMPLETED
+							</option>
+
+						</Form.Select>
+					</Form.Group>
+
+				)
+			}
+		}
+	}
 
 	const conditionalRendering = () => {
 		if (type === 'Add') {
@@ -380,7 +509,7 @@ export const ModalGeneric = props => {
 			<Modal.Body>
 				<Form>
 					{
-						selectedCategory === 'lesson' ? '' :
+						selectedCategory === 'lesson' || category === 'lesson' ? '' :
 							<Form.Group className="mb-3">
 								<Form.Label>Nom de l'évènement </Form.Label>
 								<Form.Control
@@ -402,7 +531,7 @@ export const ModalGeneric = props => {
 
 					<Form.Group className="mb-3">
 						<Form.Label>Catégories </Form.Label>
-						<Form.Select disabled={isValid} defaultValue={selectedCategory} onChange={handleCategoryChange}>
+						<Form.Select disabled={isValid} defaultValue={category} onChange={handleCategoryChange}>
 							{categories &&
 								categories.map((category, index) => (
 									<option key={index} value={category}>
@@ -625,6 +754,29 @@ export const ModalGeneric = props => {
 							</>
 
 					}
+					{
+						category === 'lesson' ?
+							<Form.Group className="mb-3">
+								<Form.Label>Status : </Form.Label>
+								<Form.Select defaultValue={status} onChange={handleSatusChange}>
+									<option key={1} value='CONFIRMED'>
+										CONFIRMED
+									</option>
+									<option key={2} value='DONE'>
+										DONE
+									</option>
+									<option key={3} value='CANCELLED'>
+										CANCELLED
+									</option>
+									<option key={4} value='ABSENCE'>
+										ABSENCE
+									</option>
+								</Form.Select>
+							</Form.Group>
+							: ''
+					}
+					{category === 'task' ? <>{console.log("coucou")} {conditionalRenderingTaskStatus()} </> : ''}
+
 
 				</Form>
 			</Modal.Body>
