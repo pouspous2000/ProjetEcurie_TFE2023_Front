@@ -31,7 +31,7 @@ export const Additive = () => {
 								AdditivePrice={additive.price}
 								AdditiveId={additive.id}
 							/>
-							{console.log(additive.id)}
+
 						</>
 					))}
 				</>

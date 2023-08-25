@@ -30,6 +30,7 @@ export const Pension = () => {
 								PensionName={pension.name}
 								PensionPrice={pension.monthlyPrice}
 								PensionDescription={pension.description}
+								
 								PensionId={pension.id}
 							/>
 						</>
@@ -47,7 +48,7 @@ export const Pension = () => {
 			</h2>
 
 			<h3 style={{ margin: '35px' }}>
-				Additifs
+				Pension 
 				<button
 					onClick={() => createModal.openHandler()}
 					title="Ajouter une pension"

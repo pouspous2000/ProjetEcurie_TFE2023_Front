@@ -1,6 +1,4 @@
 export const  conditionalRenderingDelete = (eventId, deleteEvent, deleteTask, deleteCompetition, deleteLesson, category) => {
-
-	console.log(typeof(eventId), category)
 		if (category === 'event')
 			deleteEvent({
 				id: eventId,
@@ -10,7 +8,6 @@ export const  conditionalRenderingDelete = (eventId, deleteEvent, deleteTask, de
 				id: eventId,
 			})
 		} else if (category === 'competition') {
-			console.log(eventId, category)
 			deleteCompetition({
 				id: eventId,
 			})

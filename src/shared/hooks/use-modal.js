@@ -2,11 +2,13 @@ import { useState } from 'react'
 
 const useModal = (defaultIsVisible = false, openFn = undefined, closeFn = undefined, confirmFn = undefined, resetFormFn= undefined) => {
 	const [isVisible, setIsVisible] = useState(defaultIsVisible)
+	const [modalType, setModalType] = useState('');
 
-	const openHandler = (openFnArgs = undefined) => {
+	const openHandler = (openFnArgs = undefined, type = '') => {
 		if (openFn) {
 			openFn(openFnArgs)
 		}
+		setModalType(type);
 		setIsVisible(true)
 	}
 
@@ -29,13 +31,13 @@ const useModal = (defaultIsVisible = false, openFn = undefined, closeFn = undefi
 		}
 	  };
 
-
 	return {
 		isVisible,
 		openHandler,
 		closeHandler,
 		confirmHandler,
-		resetHandler
+		resetHandler,
+		modalType
 	}
 }
 

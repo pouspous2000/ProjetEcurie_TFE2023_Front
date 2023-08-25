@@ -4,6 +4,8 @@ import useInput from '../../../shared/hooks/use-input'
 import { Form, Modal, Button } from 'react-bootstrap'
 import PropTypes from 'prop-types'
 import ValidationConstantes from './ValidationConstantes'
+import useModal from '../../../shared/hooks/use-modal'
+import { ModalError } from '../../../shared/hooks/ModalError';
 
 const createModalProptypes = {
 	modal: PropTypes.shape({
@@ -14,7 +16,9 @@ const createModalProptypes = {
 	}),
 }
 
+
 export const ModalAddUpdatePension = props => {
+	const errorModal = useModal()
 	const { status, PensionDescription, PensionPrice, PensionName, PensionId } = props
 
 	const [namePension, setNamePension] = useState('')
@@ -37,8 +41,8 @@ export const ModalAddUpdatePension = props => {
 	}, [price, name, description])
 
 	// ________ADD___________
-	const [addPension, { isSuccess: isAddPensionSuccess }] = useAddPensionMutation()
-
+	const [addPension, { isSuccess: isAddPensionSuccess, isError: isAddPensionError, error: addPenssionError }] = useAddPensionMutation()
+	const [error, setError] = useState('');
 	const addPensionHandler = () => {
 		addPension({
 			name: name.value,
@@ -52,6 +56,15 @@ export const ModalAddUpdatePension = props => {
 			formResetHandler()
 		}
 	}, [isAddPensionSuccess, formResetHandler, props])
+
+	useEffect(()=>{
+		if (isAddPensionError){
+			errorModal.openHandler()
+			setError(addPenssionError.data.message)
+		}
+
+	}, [isAddPensionError]);
+
 
 	// ________UPDATE___________
 
@@ -167,6 +180,12 @@ export const ModalAddUpdatePension = props => {
 					</Button>
 				)}
 			</Modal.Footer>
+			{errorModal.isVisible && (
+				<ModalError
+					modal={errorModal}
+					errorMessage={error}
+				/>
+			)}
 		</Modal>
 	)
 }

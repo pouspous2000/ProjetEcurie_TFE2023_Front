@@ -4,7 +4,6 @@ const currentDateTime = moment()
 
 export const conditionalRenderingName = (name, title, status, category, setNames, type, dateStart, hourStart, isAutor) => {
     const conditionalRendering = () => {
-       console.log(category)
         if (
             (moment(dateStart, 'DD/MM/YYYY').isSameOrBefore(currentDateTime, 'day') ||
                 !isAutor) || (category === 'task' && status !== 'PENDING')) {
