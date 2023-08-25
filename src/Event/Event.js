@@ -23,6 +23,11 @@ export const Event = () => {
 		createModal.openHandler()
 	}
 
+	const views = {
+		month: true,
+		agenda: true
+	};
+
 	const {
 		data: eventables,
 		isSuccess: isGetEventablesSuccess,
@@ -33,71 +38,83 @@ export const Event = () => {
 
 	const uniqueCategoriesSet = new Set(eventables && eventables.map(eventable => eventable.eventable))
 	const uniqueCategories = [...uniqueCategoriesSet]
-	const [selectedCategory, setSelectedCategory] = useState('All')
+	const [selectedCategory, setSelectedCategory] = useState('tous les évènements')
 
 	const handleCategoryChange = event => {
 		setSelectedCategory(event.target.value)
 	}
 
-	const conditionalRenderingOnId = id => {
-		if (id !== 1) {
-			return (
-				<>
-					{createModal.isVisible && (
-						<>
-							<ModalGeneric
-								status="View"
-								id={selectedEvent.id}
-								categories={uniqueCategories}
-								category={selectedEvent.eventable}
-								autor={false}
-								start={selectedEvent.start}
-								creator={selectedEvent.creator}
-								title={selectedEvent.title}
-								participant={selectedEvent.participants}
-								descript={selectedEvent.description}
-								dateStart={moment(selectedEvent.start).format('DD/MM/YYYY')}
-								dateEnd={moment(selectedEvent.end).format('DD/MM/YYYY')}
-								hourStart={moment(selectedEvent.start).format('HH:mm')}
-								hourEnd={moment(selectedEvent.end).format('HH:mm')}
-								modal={createModal}
-							/>
-						</>
-					)}
-				</>
+	const conditionalRenderingOnId = (id, eventable) => {
+		let modalContent = null
+		if (eventable === 'event' || eventable === 'competition') {
+			modalContent = (
+
+				<ModalGeneric
+					id={selectedEvent.id}
+					title={selectedEvent.title}
+					dateStart={moment(selectedEvent.start).format('DD/MM/YYYY')}
+					dateEnd={moment(selectedEvent.end).format('DD/MM/YYYY')}
+					hourStart={moment(selectedEvent.start).format('HH:mm')}
+					hourEnd={moment(selectedEvent.end).format('HH:mm')}
+					descript={selectedEvent.description}
+					category={selectedEvent.category}
+					isAutor={id === 1}
+					type={id === 1 ? "AutorView" : "View"}
+					categories={uniqueCategories}
+					modal={createModal}
+					participants={selectedEvent.participants}
+					creator={selectedEvent.creator}
+				/>
 			)
-		} else if (id === 1) {
-			return (
-				<>
-					{createModal.isVisible && (
-						<ModalGeneric
-							status="AutorView"
-							id={selectedEvent.id}
-							categories={uniqueCategories}
-							category={selectedEvent.eventable}
-							autor={true}
-							start={selectedEvent.start}
-							creator={selectedEvent.creator}
-							title={selectedEvent.title}
-							participant={selectedEvent.participants}
-							descript={selectedEvent.description}
-							dateStart={moment(selectedEvent.start).format('DD/MM/YYYY')}
-							dateEnd={moment(selectedEvent.end).format('DD/MM/YYYY')}
-							hourStart={moment(selectedEvent.start).format('HH:mm')}
-							hourEnd={moment(selectedEvent.end).format('HH:mm')}
-							modal={createModal}
-						/>
-					)}
-				</>
+
+		} else if (eventable === 'lesson') {
+			modalContent = (
+				<ModalGeneric
+					id={selectedEvent.id}
+					title={selectedEvent.title}
+					dateStart={moment(selectedEvent.start).format('DD/MM/YYYY')}
+					dateEnd={moment(selectedEvent.end).format('DD/MM/YYYY')}
+					hourStart={moment(selectedEvent.start).format('HH:mm')}
+					hourEnd={moment(selectedEvent.end).format('HH:mm')}
+					status={selectedEvent.status}
+					category={selectedEvent.category}
+					isAutor={id === 1}
+					type={id === 1 ? "AutorView" : "View"}
+					categories={uniqueCategories}
+					modal={createModal}
+					creator={selectedEvent.creator}
+					client={selectedEvent.client}
+				/>
+			)
+		} else if (eventable === 'task') {
+			modalContent = (
+				<ModalGeneric
+					id={selectedEvent.id}
+					title={selectedEvent.title}
+					dateStart={moment(selectedEvent.start).format('DD/MM/YYYY')}
+					dateEnd={moment(selectedEvent.end).format('DD/MM/YYYY')}
+					hourStart={moment(selectedEvent.start).format('HH:mm')}
+					hourEnd={moment(selectedEvent.end).format('HH:mm')}
+					status={selectedEvent.status}
+					remark={selectedEvent.remak}
+					category={selectedEvent.category}
+					isAutor={id === 1}
+					type={id === 1 ? "AutorView" : "View"}
+					categories={uniqueCategories}
+					modal={createModal}
+					creator={selectedEvent.creator}
+					employee={selectedEvent.employee}
+				/>
 			)
 		}
+		return createModal.isVisible ? <>{modalContent}</> : null;
 	}
 
 	const getFilteredEvents = category => {
 		return (
 			eventables &&
 			eventables.filter(eventable => {
-				if (category === 'All') {
+				if (category === 'tous les évènements') {
 					return (
 						eventable.eventable === 'event' ||
 						eventable.eventable === 'competition' ||
@@ -124,10 +141,32 @@ export const Event = () => {
 							(eventable.participants &&
 								eventable.participants.some(participant => participant.userId === 1)))
 					)
+				} else if (category === 'tous mes évènements') {
+					return (
+						eventable && eventable.creator.userId === 1
+					)
+
 				}
 				return false
 			})
 		)
+	}
+	const conditionalColor = envent => {
+
+		if (envent === 'event') {
+			return '#271503'
+		} else if (envent === 'competition') {
+
+			return '#900C3F'
+		} else if (envent === 'lesson') {
+
+			return '#FF5733'
+		} else if (envent === 'task') {
+
+			return '#94D5DC'
+		}
+		return '#FFC300'
+
 	}
 
 	const conditionalRendering = () => {
@@ -137,18 +176,37 @@ export const Event = () => {
 			return <BaseErrorAlert message={getEventableError} />
 		} else if (isGetEventablesSuccess) {
 			const filteredEvents = getFilteredEvents(selectedCategory)
-			const formattedEvents = filteredEvents.map(eventable => ({
-				title: eventable.name,
+			const formattedEvents = filteredEvents && filteredEvents.map(eventable => ({
+				category: eventable.eventable,
+				title: eventable.name === undefined ? 'Cours' : eventable.name,
 				id: eventable.id,
-				start: new Date(eventable.startingAt),
-				end: new Date(eventable.endingAt),
-				description: eventable.description,
+				start: new Date(eventable.startingAt).toString(),
+				end: new Date(eventable.endingAt).toString(),
 				creator: eventable.creator,
-				participants: eventable.participants,
-			}))
+				...(eventable && eventable.eventable) === 'event' || (eventable.eventable === 'competition') ?
 
-			const eventStyleGetter = (eventable, isSelected) => {
-				const backgroundColor = eventable.color || '#271503' // Couleur par défaut si aucune couleur n'est spécifiée pour l'événement
+					{
+						description: eventable.description,
+						participants: eventable.participants
+
+					}
+					:
+					eventable && eventable.eventable === 'task' ?
+						{
+							remark: eventable.remark,
+							status: eventable.status,
+							employee: eventable.employee
+						}
+						:
+						{
+							status: eventable.status,
+							client: eventable.client
+						}
+
+			}));
+
+			const eventStyleGetter = (eventables, isSelected) => {
+				const backgroundColor = conditionalColor(eventables.category); // Appel de la fonction pour obtenir la couleur
 
 				return {
 					style: {
@@ -158,9 +216,9 @@ export const Event = () => {
 						color: 'white',
 						border: 'none',
 					},
-				}
-			}
+				};
 
+			};
 			return (
 				<div>
 					<Calendar
@@ -172,16 +230,23 @@ export const Event = () => {
 						style={{ height: '100vh' }}
 						onSelectEvent={handleEventClick}
 						eventPropGetter={eventStyleGetter}
+						views={views}
 					/>
 
 					{selectedEvent && (
-						<>{selectedEvent.creator && <>{conditionalRenderingOnId(selectedEvent.creator.userId)}</>}</>
+
+						<>
+							{selectedEvent.creator &&
+								<>
+									{conditionalRenderingOnId(selectedEvent.creator.userId, selectedEvent.category)}
+								</>
+							}
+						</>
 					)}
 				</div>
 			)
 		}
 	}
-
 	return (
 		<div>
 			<h2 style={{ width: 'fit-content', marginLeft: '3rem', fontSize: '30px', color: '#CD853F' }}>
@@ -192,6 +257,7 @@ export const Event = () => {
 				Évènements
 				<button
 					onClick={() => {
+						setSelectedEvent(null)
 						createModal.openHandler()
 					}}
 					title="Ajouter un additif"
@@ -211,12 +277,15 @@ export const Event = () => {
 				<Form.Group className="mb-3">
 					<Form.Label> Filtre Catégories </Form.Label>
 					<Form.Select defaultValue={selectedCategory} onChange={handleCategoryChange} className="mr-3 ml-3">
-						<option key={1} defaultValue="All">
-							All
+						<option key={1} defaultValue="tous les évènements">
+							tous les évènements
+						</option>
+						<option key={2} defaultValue="tous mes évènements">
+							tous mes évènements
 						</option>
 						{uniqueCategories &&
 							uniqueCategories.map((category, index) => (
-								<option key={Number(index) + 1} defaultValue={category}>
+								<option key={Number(index) + 2} defaultValue={category}>
 									{category}
 								</option>
 							))}
@@ -226,8 +295,12 @@ export const Event = () => {
 
 			{createModal.isVisible && (
 				<>
-					<ModalGeneric modal={createModal} status="Add" isAutor={true} categories={uniqueCategories} />
-					console.log(uniqueCategories)
+					<ModalGeneric
+						modal={createModal}
+						type="Add"
+						isAutor={true}
+						categories={uniqueCategories}
+					/>
 				</>
 			)}
 			{conditionalRendering()}

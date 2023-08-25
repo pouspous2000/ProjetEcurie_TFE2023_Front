@@ -2,6 +2,7 @@ import { Modal, Button, Form } from 'react-bootstrap'
 import useInput from '../../shared/hooks/use-input'
 import PropTypes from 'prop-types'
 import { useState, useEffect, useCallback } from 'react'
+
 import {
 	useAddEventMutation,
 	useSubscribeEventMutation,
@@ -21,6 +22,7 @@ import {
 	useDeleteTaskMutation,
 } from '../../API/task.api'
 
+import { useGetContactByRoleCategoryQuery } from '../../API/contact.api'
 import { useAddLessonMutation, useUpdateLessonMutation, useDeleteLessonMutation } from '../../API/lesson.api'
 import validationConstants from './ValidationConstante'
 import moment from 'moment'
@@ -34,31 +36,33 @@ const createModalProptypes = {
 	}),
 }
 
+
 export const ModalGeneric = props => {
 	const {
 		id,
-		descript,
+		title,
 		dateStart,
 		dateEnd,
 		hourStart,
 		hourEnd,
-		title,
-		isAutor,
-		statusConnected,
 		status,
-		creator,
-		client,
-		categories,
-		category,
-		employee,
 		remark,
+		descript,
+		category,
+		isAutor,
+		type,
+		categories,
 	} = props
+
 
 	const [description, setDescription] = useState('')
 	const [statusTask, setStatusTask] = useState('')
 	const [remarkTask, setRemarkTask] = useState('')
+	const [names, setNames] = useState('')
 
 	const currentDateTime = moment()
+
+	const isValid = type !== 'Add'
 
 	// ------Formatage date et heure-----------
 	const [startDate, setStartDate] = useState('')
@@ -87,10 +91,15 @@ export const ModalGeneric = props => {
 		return `${date}T${formattedTime}.000Z`
 	}
 	// ---------CatégoriesEventable-----------
-	const [selectedCategory, setSelectedCategory] = useState(category)
-
+	const [selectedCategory, setSelectedCategory] = useState(type === 'Add' ? 'event' : categories)
 	const handleCategoryChange = event => {
 		setSelectedCategory(event.target.value)
+	}
+	// ---------CatégoriesEventable-----------
+	const [selectedEmployee, setSelectedEmployee] = useState("")
+	const handleEmployeeChange = employee => {
+		setSelectedEmployee(employee.target.value)
+		console.log(employee)
 	}
 
 	// ---------Validation des inputs---------
@@ -121,6 +130,17 @@ export const ModalGeneric = props => {
 		}
 		return true
 	}
+	//  __________GET_______________
+	const {
+		data: getContactByRoleCategoryData,
+		isSuccess: isGetContactByRoleCategorySuccess,
+		isLoading: isGetContactByRoleCategoryLoading,
+		isError: isGetContactByRoleCategoryError,
+		error: getContactByRoleCategoryError,
+	} = useGetContactByRoleCategoryQuery(selectedCategory === 'lesson' ? 'CLIENT' : 'EMPLOYEE');
+
+
+
 
 	// _________ADD________
 	const [addEvent, { isSuccess: isAddEventSuccess }] = useAddEventMutation()
@@ -129,29 +149,28 @@ export const ModalGeneric = props => {
 	const [addTask, { isSuccess: isAddTaskSuccess }] = useAddTaskMutation()
 
 	const addHandler = () => {
-		if (category === 'event') {
+
+		if (selectedCategory === 'event') {
 			addEvent({
 				name: name.value,
 				description: description,
 				startingAt: getFormattedDateTime(startDate, startTime),
 				endingAt: getFormattedDateTime(endDate, endTime),
-				participants: [],
-			})
-		} else if (category === 'task') {
+				participants: []
+			});
+
+		} else if (selectedCategory === 'task') {
+			const getIdEmploee = getContactByRoleCategoryData && getContactByRoleCategoryData.find(employee => `${employee.firstName} ${employee.lastName}` === selectedEmployee)
 			addTask({
-				employeeId: employee.userId,
+				employeeId: getIdEmploee.id,
 				name: name.value,
 				description: description,
-				startingAt: `${moment(dateStart, 'DD/MM/YYYY').format('YYYY-MM-DD')}T${moment(
-					hourStart,
-					'HH:mm'
-				).format('HH:mm:ss')}.000Z`,
-				endingAt: `${moment(dateEnd, 'DD/MM/YYYY').format('YYYY-MM-DD')}T${moment(hourEnd, 'HH:mm').format(
-					'HH:mm:ss'
-				)}.000Z`,
+				startingAt: getFormattedDateTime(startDate, startTime),
+				endingAt: getFormattedDateTime(endDate, endTime),
 				remark: remarkTask,
 			})
-		} else if (category === 'competion') {
+
+		} else if (selectedCategory === 'competition') {
 			addCompetition({
 				name: name.value,
 				description: description,
@@ -159,25 +178,22 @@ export const ModalGeneric = props => {
 				endingAt: getFormattedDateTime(endDate, endTime),
 				participants: [],
 			})
-		} else if (category === 'lesson') {
+
+		} else if (selectedCategory === 'lesson') {
+			const getIdEmploee = getContactByRoleCategoryData && getContactByRoleCategoryData.find(employee => `${employee.firstName} ${employee.lastName}` === selectedEmployee)
 			addLesson({
-				clientId: client.userId,
-				startingAt: `${moment(dateStart, 'DD/MM/YYYY').format('YYYY-MM-DD')}T${moment(
-					hourStart,
-					'HH:mm'
-				).format('HH:mm:ss')}.000Z`,
-				endingAt: `${moment(dateEnd, 'DD/MM/YYYY').format('YYYY-MM-DD')}T${moment(hourEnd, 'HH:mm').format(
-					'HH:mm:ss'
-				)}.000Z`,
+				clientId: getIdEmploee.id,
+				startingAt: getFormattedDateTime(startDate, startTime),
+				endingAt: getFormattedDateTime(endDate, endTime),
 			})
 		}
 	}
 
 	useEffect(() => {
-		if (isAddEventSuccess || isAddTaskSuccess || isAddCompetitionSuccess) {
+		if (isAddEventSuccess || isAddTaskSuccess || isAddCompetitionSuccess || isAddLessonSuccess) {
 			props.modal.closeHandler()
 		}
-	}, [isAddEventSuccess, isAddTaskSuccess, isAddCompetitionSuccess, props])
+	}, [isAddEventSuccess, isAddTaskSuccess, isAddCompetitionSuccess, isAddLessonSuccess, props])
 
 	const isFormValid = !(
 		name.hasError ||
@@ -194,11 +210,11 @@ export const ModalGeneric = props => {
 	const [subscribeCompetition, { isSuccess: isSubscribeCompetitionSuccess }] = useSubscribeCompetitionMutation()
 
 	const handelParticipant = eventId => {
-		if (category === 'event')
+		if (category === 'event') {
 			subscribeEvent({
 				id: eventId,
 			})
-		else if (category === 'task') {
+		} else if (category === 'task') {
 			subscribeTask({
 				id: eventId,
 			})
@@ -209,11 +225,14 @@ export const ModalGeneric = props => {
 		}
 	}
 
+
 	useEffect(() => {
 		if (isSubscribeEventSuccess || isSubscribeTaskSuccess || isSubscribeCompetitionSuccess) {
 			props.modal.closeHandler()
 		}
 	}, [isSubscribeEventSuccess, isSubscribeTaskSuccess, isSubscribeCompetitionSuccess, props])
+
+
 
 	//  __________UPDATE_______________
 
@@ -223,61 +242,38 @@ export const ModalGeneric = props => {
 	const [updateLesson, { isSuccess: isUpdateLessonSuccess }] = useUpdateLessonMutation()
 
 	const updateHandler = () => {
+		let eventData = {
+			id: id,
+			name: name.value === '' ? title : name.value,
+			description: description === '' ? descript : description,
+			startingAt: `${moment(dateStart, 'DD/MM/YYYY').format('YYYY-MM-DD')}T${moment(hourStart, 'HH:mm').format('HH:mm:ss')}.000Z`,
+			endingAt: `${moment(dateEnd, 'DD/MM/YYYY').format('YYYY-MM-DD')}T${moment(hourEnd, 'HH:mm').format('HH:mm:ss')}.000Z`,
+		};
+
 		if (category === 'event') {
-			updateEvent({
-				id: id,
-				name: name.value === '' ? title : name.value,
-				description: description === '' ? descript : description,
-				startingAt: `${moment(dateStart, 'DD/MM/YYYY').format('YYYY-MM-DD')}T${moment(
-					hourStart,
-					'HH:mm'
-				).format('HH:mm:ss')}.000Z`,
-				endingAt: `${moment(dateEnd, 'DD/MM/YYYY').format('YYYY-MM-DD')}T${moment(hourEnd, 'HH:mm').format(
-					'HH:mm:ss'
-				)}.000Z`,
-			})
+			eventData.participants = [];
+			updateEvent(eventData);
 		} else if (category === 'task') {
-			updateTask({
-				creatorId: creator.userId,
-				employeeId: employee.userId,
-				name: name.value === '' ? title : name.value,
-				description: description === '' ? descript : description,
-				startingAt: `${moment(dateStart, 'DD/MM/YYYY').format('YYYY-MM-DD')}T${moment(
-					hourStart,
-					'HH:mm'
-				).format('HH:mm:ss')}.000Z`,
-				endingAt: `${moment(dateEnd, 'DD/MM/YYYY').format('YYYY-MM-DD')}T${moment(hourEnd, 'HH:mm').format(
-					'HH:mm:ss'
-				)}.000Z`,
-				status: statusTask === '' ? status : statusTask,
-				remark: remarkTask === '' ? remark : remarkTask,
-			})
+			eventData.employeeId = props.employee.userId;
+			eventData.remark = remarkTask;
+			updateTask(eventData);
 		} else if (category === 'competion') {
-			updateCompetition({
-				id: id,
-				name: name.value === '' ? title : name.value,
-				description: description === '' ? descript : description,
-				startingAt: `${moment(dateStart, 'DD/MM/YYYY').format('YYYY-MM-DD')}T${moment(
-					hourStart,
-					'HH:mm'
-				).format('HH:mm:ss')}.000Z`,
-				endingAt: `${moment(dateEnd, 'DD/MM/YYYY').format('YYYY-MM-DD')}T${moment(hourEnd, 'HH:mm').format(
-					'HH:mm:ss'
-				)}.000Z`,
-			})
+			eventData.participants = [];
+			updateCompetition(eventData);
 		} else if (category === 'lesson') {
 			updateLesson({
-				status: statusTask === '' ? status : statusTask,
+				clientId: props.client.userId,
 				startingAt: `${moment(dateStart, 'DD/MM/YYYY').format('YYYY-MM-DD')}T${moment(
 					hourStart,
 					'HH:mm'
 				).format('HH:mm:ss')}.000Z`,
-				endingAt: `${moment(dateEnd, 'DD/MM/YYYY').format('YYYY-MM-DD')}T${moment(hourEnd, 'HH:mm').format(
-					'HH:mm:ss'
-				)}.000Z`,
-			})
+				endingAt: `${moment(dateEnd, 'DD/MM/YYYY').format('YYYY-MM-DD')}T${moment(
+					hourEnd,
+					'HH:mm'
+				).format('HH:mm:ss')}.000Z`
+			});
 		}
-	}
+	};
 
 	useEffect(() => {
 		if (isUpdateEventSuccess || isUpdateLessonSuccess || isUpdateTaskSuccess || isUpdateCompetitionSuccess) {
@@ -318,40 +314,27 @@ export const ModalGeneric = props => {
 		}
 	}, [isDeleteEventSuccess, isDeleteCompetitionSuccess, isDeleteLessonSuccess, isDeleteTaskSuccess, props])
 
-	const formResetHandler = useCallback(() => {
-		name.reset()
-		setDescription('')
-		setStartDate('')
-		setStartTime('')
-		setEndDate('')
-		setEndTime('')
-		setSelectedDate('')
-		setSelectedTime('')
-	}, [name])
-
 	useEffect(() => {
 		if (isAddEventSuccess) {
-			formResetHandler()
 			props.modal.closeHandler()
 		}
-	}, [props, formResetHandler, isAddEventSuccess])
+	}, [props, isAddEventSuccess])
 
 	const conditionalRendering = () => {
-		if (statusConnected === 'Add') {
-			console.log('Add')
+		if (type === 'Add') {
 			return (
 				<Button variant="secondary" disabled={!isFormValid || !isTimeValid()} onClick={addHandler}>
 					Ajouter
 				</Button>
 			)
-		} else if (statusConnected === 'View') {
+		} else if (type === 'View') {
 			return (
 				<>
 					{dateStart > currentDateTime.format('DD/MM/YYYY') ? (
-						<Button variant="secondary" onClick={handelParticipant(id)}>
+						<Button variant="secondary" onClick={() => handelParticipant(id)}>
 							{props.participant && props.participant.find(participant => participant.userId === 1)
 								? // TODO : Mettre l'id du user ! Ici Hardcodé !
-								  'Se désinscrire'
+								'Se désinscrire'
 								: "S'inscrire"}
 						</Button>
 					) : (
@@ -359,7 +342,7 @@ export const ModalGeneric = props => {
 					)}
 				</>
 			)
-		} else if (statusConnected === 'AutorView') {
+		} else if (type === 'AutorView') {
 			return (
 				<>
 					<Button
@@ -389,37 +372,38 @@ export const ModalGeneric = props => {
 						className="bi bi-x-circle-fill"
 						onClick={() => {
 							props.modal.closeHandler && props.modal.closeHandler()
-							formResetHandler()
+
 						}}>
-						{category === 'lesson' ? 'Cours' : ''}
 					</i>
 				</Modal.Title>
 			</Modal.Header>
 
 			<Modal.Body>
 				<Form>
-					{category === 'lesson' ? (
-						''
-					) : (
-						<Form.Group className="mb-3">
-							<Form.Label>Nom de l'évènement </Form.Label>
-							<Form.Control
-								type="text"
-								placeholder="Ex: Additive complète"
-								name="name"
-								defaultValue={title}
-								onInput={name.inputHandler}
-								onBlur={name.blurHandler}
-								isInvalid={name.hasError}
-								disabled={!isAutor}
-								style={isAutor ? {} : { background: 'transparent', pointerEvents: 'none' }}
-							/>
-							<Form.Control.Feedback type="invalid">{name.errorMessage}</Form.Control.Feedback>
-						</Form.Group>
-					)}
+					{
+						selectedCategory === 'lesson' ? '' :
+							<Form.Group className="mb-3">
+								<Form.Label>Nom de l'évènement </Form.Label>
+								<Form.Control
+									type="text"
+									placeholder="Ex: Additive complète"
+									name="name"
+									defaultValue={type === 'Add' ? '' : title}
+									onChange={event => setNames(event.target.value)}
+									onInput={name.inputHandler}
+									onBlur={name.blurHandler}
+									isInvalid={name.hasError}
+									disabled={!isAutor}
+									style={isAutor ? {} : { background: 'transparent', pointerEvents: 'none' }}
+								/>
+								<Form.Control.Feedback type="invalid">{name.errorMessage}</Form.Control.Feedback>
+							</Form.Group>
+					}
+
+
 					<Form.Group className="mb-3">
 						<Form.Label>Catégories </Form.Label>
-						<Form.Select value={selectedCategory} onChange={handleCategoryChange}>
+						<Form.Select disabled={isValid} defaultValue={selectedCategory} onChange={handleCategoryChange}>
 							{categories &&
 								categories.map((category, index) => (
 									<option key={index} value={category}>
@@ -429,79 +413,59 @@ export const ModalGeneric = props => {
 						</Form.Select>
 					</Form.Group>
 
-					{category === 'task' ? (
-						<Form.Group className="mb-3">
-							<Form.Label>Catégories </Form.Label>
-							<Form.Select value={selectedCategory} onChange={handleCategoryChange}>
-								{categories &&
-									categories.map((category, index) => (
-										<option key={index} value={category}>
-											{category}
-										</option>
-									))}
-							</Form.Select>
-						</Form.Group>
-					) : (
-						<Form.Group className="mb-3">
-							<Form.Label>Catégories </Form.Label>
-							<Form.Select value={selectedCategory} onChange={handleCategoryChange}>
-								{categories &&
-									categories.map((category, index) => (
-										<option key={index} value={category}>
-											{category}
-										</option>
-									))}
-							</Form.Select>
-						</Form.Group>
-					)}
 
-					{category === 'lesson' ? (
-						''
-					) : (
-						<>
-							{category === 'task' ? (
-								<Form.Group className="mb-3">
-									<Form.Label>Remarque </Form.Label>
-									<Form.Control
-										rows="3"
-										placeholder="Ajoutez une remarque"
-										defaultValue={remark}
-										onChange={event => setRemarkTask(event.target.value)}
-										disabled={!isAutor}
-										style={isAutor ? {} : { background: 'transparent', pointerEvents: 'none' }}
-									/>
-								</Form.Group>
-							) : (
-								<Form.Group className="mb-3">
-									<Form.Label>Description de l'évènement </Form.Label>
-									<Form.Control
-										rows="3"
-										placeholder="Décrivez votre evènement"
-										defaultValue={descript}
-										onChange={event => setDescription(event.target.value)}
-										onInput={descriptions.inputHandler}
-										onBlur={descriptions.blurHandler}
-										isInvalid={descriptions.hasError}
-										disabled={!isAutor}
-										style={isAutor ? {} : { background: 'transparent', pointerEvents: 'none' }}
-									/>
-									<Form.Control.Feedback type="invalid">
-										{descriptions.errorMessage}
-									</Form.Control.Feedback>
-								</Form.Group>
-							)}
+
+					{category === 'task' || selectedCategory === 'task' ?
+						<Form.Group className="mb-3">
+							<Form.Label>Remarque sur la tâche</Form.Label>
+							<Form.Control
+								rows="3"
+								placeholder="Ajoutez une remarque"
+								defaultValue={type === 'Add' ? '' : remark}
+								onChange={event => setRemarkTask(event.target.value)}
+								onInput={descriptions.inputHandler}
+								onBlur={descriptions.blurHandler}
+								isInvalid={descriptions.hasError}
+								disabled={!isAutor}
+								style={isAutor ? {} : { background: 'transparent', pointerEvents: 'none' }}
+							/>
+							<Form.Control.Feedback type="invalid">
+								{descriptions.errorMessage}
+							</Form.Control.Feedback>
+						</Form.Group>
+						: <>
+							{
+								category === 'lesson' || selectedCategory === 'lesson' ? '' :
+
+									<Form.Group className="mb-3">
+										<Form.Label>Description de l'évènement </Form.Label>
+										<Form.Control
+											rows="3"
+											placeholder="Décrivez votre evènement"
+											defaultValue={type === 'Add' ? '' : descript}
+											onChange={event => setDescription(event.target.value)}
+											onInput={descriptions.inputHandler}
+											onBlur={descriptions.blurHandler}
+											isInvalid={descriptions.hasError}
+											disabled={!isAutor}
+											style={isAutor ? {} : { background: 'transparent', pointerEvents: 'none' }}
+										/>
+										<Form.Control.Feedback type="invalid">
+											{descriptions.errorMessage}
+										</Form.Control.Feedback>
+									</Form.Group>
+							}
 						</>
-					)}
+					}
 
 					<Form.Group className="mb-3">
 						<Form.Label> Début de l'évènement : </Form.Label>
 						<br />
-
 						<Form.Label> Date </Form.Label>
 						<Form.Control
 							min={moment().format('YYYY-MM-DD')}
 							type="date"
-							defaultValue={moment(dateStart, 'DD/MM/YYYY').format('YYYY-MM-DD')}
+							defaultValue={type === 'Add' ? '' : moment(dateStart, 'DD/MM/YYYY').format('YYYY-MM-DD')}
 							onChange={e => {
 								handleStartDateChange(e)
 								setSelectedDate(e.target.value)
@@ -517,7 +481,7 @@ export const ModalGeneric = props => {
 						<Form.Label>Heure </Form.Label>
 						<Form.Control
 							type="time"
-							defaultValue={hourStart}
+							defaultValue={type === 'Add' ? '' : hourStart}
 							onChange={e => {
 								handleStartTimeChange(e)
 								setSelectedTime(e.target.value)
@@ -539,7 +503,7 @@ export const ModalGeneric = props => {
 						<Form.Control
 							min={moment().format('YYYY-MM-DD')}
 							type="date"
-							defaultValue={moment(dateEnd, 'DD/MM/YYYY').format('YYYY-MM-DD')}
+							defaultValue={type === 'Add' ? '' : moment(dateEnd, 'DD/MM/YYYY').format('YYYY-MM-DD')}
 							onChange={e => {
 								handleEndDateChange(e)
 								setSelectedDate(e.target.value)
@@ -556,7 +520,7 @@ export const ModalGeneric = props => {
 						<Form.Control
 							disabled={!isAutor}
 							type="time"
-							defaultValue={hourEnd}
+							defaultValue={type === 'Add' ? '' : hourEnd}
 							onChange={e => {
 								handleEndTimeChange(e)
 								setSelectedTime(e.target.value)
@@ -569,49 +533,105 @@ export const ModalGeneric = props => {
 						<Form.Control.Feedback type="invalid">{endTimes.errorMessage}</Form.Control.Feedback>
 					</Form.Group>
 
-					{category === 'competition' || category === 'event' ? (
-						<Form.Group>
-							{statusConnected !== 'Add' && (
-								<Form.Group>
-									<Form.Label style={{ textDecoration: 'underline' }}> Créateur : </Form.Label>
-									<div>
-										<p>
-											{creator.firstName} {creator.lastName}
-										</p>
-									</div>
 
-									<Form.Label style={{ textDecoration: 'underline' }}> Participants</Form.Label>
 
-									{props.participant.length === 0 ? (
+					{type !== 'Add' ?
+						<>
+							<Form.Group>
+								<Form.Label style={{ textDecoration: 'underline' }}> Créateur : </Form.Label>
+								<div>
+									<p>
+										{props.creator.firstName} {props.creator.lastName}
+									</p>
+								</div>
+
+								<Form.Label style={{ textDecoration: 'underline' }}> Participants : </Form.Label>
+
+
+								{
+									props.participant === [] ? (
 										<div>
-											<p>
-												{creator.firstName} {creator.lastName}
-											</p>
+											Il n'y a pas encore de participants pour cet évènement.
 										</div>
 									) : (
-										props.participant &&
-										props.participant.map(participant => (
-											<div key={participant.userId}>
-												<p>
-													- {participant.firstName} {participant.lastName}
-												</p>
-											</div>
-										))
-									)}
-								</Form.Group>
-							)}
-						</Form.Group>
-					) : (
-						''
-					)}
+										(category === 'competition' || category === 'event') && type !== 'Add' ? (
+											props.participants.map(participant => (
+												<div key={participant.userId}>
+													<p>
+														- {participant.firstName} {participant.lastName}
+													</p>
+												</div>
+											))
+										) : (
+											category === 'lesson' && type !== 'Add' ? (
+												<div key={props.client.userId}>
+													<p>
+														- {props.client.firstName} {props.client.lastName}
+													</p>
+												</div>
+											) : (
+												category === 'task' && type !== 'Add' ? (
+													<div key={props.employee.userId}>
+														<p>
+															- {props.employee.firstName} {props.employee.lastName}
+														</p>
+													</div>
+												) : (
+													''
+												)
+											)
+										)
+									)
+								}
+							</Form.Group>
+						</>
+						: ''
+					}
+					{
+						selectedCategory === 'task' ?
+							<Form.Group className="mb-3">
+								<Form.Label>Employé : </Form.Label>
+								<Form.Select disabled={isValid} defaultValue={selectedEmployee} onChange={handleEmployeeChange}>
+									{getContactByRoleCategoryData &&
+										getContactByRoleCategoryData.map((value, index) => (
+											<option key={index} value={value.userId}>
+												{value.firstName}  {value.lastName}
+											</option>
+										))}
+								</Form.Select>
+							</Form.Group>
+							:
+							<>
+								{
+									selectedCategory === 'lesson' ?
+										<Form.Group className="mb-3">
+											<Form.Label>Client : </Form.Label>
+											<Form.Select disabled={isValid} defaultValue={selectedEmployee} onChange={handleEmployeeChange}>
+												{getContactByRoleCategoryData &&
+													getContactByRoleCategoryData.map((value, index) => (
+														<option key={index} value={value.userId}>
+															{value.firstName}  {value.lastName}
+														</option>
+													))}
+											</Form.Select>
+										</Form.Group>
+										: ''
+								}
+							</>
+
+					}
+
 				</Form>
 			</Modal.Body>
 			<Modal.Footer>{conditionalRendering()}</Modal.Footer>
 		</Modal>
 	)
+
 }
+
 ModalGeneric.propTypes = createModalProptypes
 ModalGeneric.defaultProps = {
+
 	descript: '',
 	dateStart: '',
 	dateEnd: '',
@@ -619,7 +639,7 @@ ModalGeneric.defaultProps = {
 	hourEnd: '',
 	title: '',
 	isAutor: '',
-	statusConnected: '',
+	type: '',
 	status: '',
 	creator: '',
 	client: '',

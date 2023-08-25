@@ -33,7 +33,7 @@ const CompetitionApi = apiSlice.injectEndpoints({
 			}),
 			invalidatesTags: [tag],
 		}),
-		subscribeComptition: builder.mutation({
+		subscribeCompetition: builder.mutation({
 			query: competition => ({
 				url: `/comptitions/${competition.id}`,
 				method: 'POST',
