@@ -1,7 +1,7 @@
 import { Modal, Button, Form } from 'react-bootstrap'
 import useInput from '../../shared/hooks/use-input'
 import PropTypes from 'prop-types'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 
 import {
 	useAddEventMutation,
@@ -35,7 +35,6 @@ const createModalProptypes = {
 		confirmHandler: PropTypes.func,
 	}),
 }
-
 
 export const ModalGeneric = props => {
 	const {
@@ -413,50 +412,56 @@ export const ModalGeneric = props => {
 						</Form.Select>
 					</Form.Group>
 
+					{
+						category === 'lesson' || selectedCategory === 'lesson' ? '' :
+							<>
 
+								<Form.Group className="mb-3">
+									<Form.Label>Description de l'évènement </Form.Label>
+									<Form.Control
+										rows="3"
+										placeholder="Décrivez votre evènement"
+										defaultValue={type === 'Add' ? '' : descript}
+										onChange={event => setDescription(event.target.value)}
+										onInput={descriptions.inputHandler}
+										onBlur={descriptions.blurHandler}
+										isInvalid={descriptions.hasError}
+										disabled={!isAutor}
+										style={isAutor ? {} : { background: 'transparent', pointerEvents: 'none' }}
+									/>
+									<Form.Control.Feedback type="invalid">
+										{descriptions.errorMessage}
+									</Form.Control.Feedback>
+								</Form.Group>
 
-					{category === 'task' || selectedCategory === 'task' ?
-						<Form.Group className="mb-3">
-							<Form.Label>Remarque sur la tâche</Form.Label>
-							<Form.Control
-								rows="3"
-								placeholder="Ajoutez une remarque"
-								defaultValue={type === 'Add' ? '' : remark}
-								onChange={event => setRemarkTask(event.target.value)}
-								onInput={descriptions.inputHandler}
-								onBlur={descriptions.blurHandler}
-								isInvalid={descriptions.hasError}
-								disabled={!isAutor}
-								style={isAutor ? {} : { background: 'transparent', pointerEvents: 'none' }}
-							/>
-							<Form.Control.Feedback type="invalid">
-								{descriptions.errorMessage}
-							</Form.Control.Feedback>
-						</Form.Group>
-						: <>
-							{
-								category === 'lesson' || selectedCategory === 'lesson' ? '' :
+								{
 
-									<Form.Group className="mb-3">
-										<Form.Label>Description de l'évènement </Form.Label>
-										<Form.Control
-											rows="3"
-											placeholder="Décrivez votre evènement"
-											defaultValue={type === 'Add' ? '' : descript}
-											onChange={event => setDescription(event.target.value)}
-											onInput={descriptions.inputHandler}
-											onBlur={descriptions.blurHandler}
-											isInvalid={descriptions.hasError}
-											disabled={!isAutor}
-											style={isAutor ? {} : { background: 'transparent', pointerEvents: 'none' }}
-										/>
-										<Form.Control.Feedback type="invalid">
-											{descriptions.errorMessage}
-										</Form.Control.Feedback>
-									</Form.Group>
-							}
-						</>
+									category === 'task' || selectedCategory === 'task' ?
+										<>
+											<Form.Group className="mb-3">
+												<Form.Label>Remarque sur la tâche</Form.Label>
+												<Form.Control
+													rows="3"
+													placeholder="Ajoutez une remarque"
+													defaultValue={type === 'Add' ? '' : remark}
+													onChange={event => setRemarkTask(event.target.value)}
+													onInput={descriptions.inputHandler}
+													onBlur={descriptions.blurHandler}
+													isInvalid={descriptions.hasError}
+													disabled={!isAutor}
+													style={isAutor ? {} : { background: 'transparent', pointerEvents: 'none' }}
+												/>
+												<Form.Control.Feedback type="invalid">
+													{descriptions.errorMessage}
+												</Form.Control.Feedback>
+											</Form.Group>
+										</>
+										: ''
+								}
+							</>
 					}
+
+
 
 					<Form.Group className="mb-3">
 						<Form.Label> Début de l'évènement : </Form.Label>
