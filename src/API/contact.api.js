@@ -35,8 +35,11 @@ const contactApi = apiSlice.injectEndpoints({
 			}),
 			invalidatesTags: tags
 		}),
-		getContact: builder.mutation({
-			query: contact => `/${routePrefix}/${contact.id}`
+		getContact: builder.query({
+			query: ({ id }) => ({
+			url:`/${routePrefix}/${id}`,
+			method: 'GET'
+		})
 		}),
 		updateContact: builder.mutation({
 			query: contact => ({

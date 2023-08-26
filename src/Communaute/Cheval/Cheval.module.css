@@ -1,0 +1,42 @@
+
+.square {
+    width: 80vw;
+    height: 80vh;
+    background-color: #dce3e8;
+    margin-top: auto;
+    margin-bottom: auto;
+    margin: auto;
+    border-radius: 10px;
+    position: relative;
+    justify-content: center;
+    display: flex;
+   
+    border: 2px;
+}
+.content {
+height: 80%;
+width: 95%;
+ background-color: white;
+ border-radius: 10px;
+ margin : 10px;
+ overflow-y: auto;
+}
+
+.infoTitle {
+    font-weight:900px;
+    margin-top: 10px;
+    text-decoration: underline;
+}
+
+.infoVAlue {
+    margin-bottom: 10px;
+}
+.custom .nav .nav-tabs{
+    background-color: rgb(100, 29, 29 ) !important ;
+
+}
+.custom{
+    background-color: aqua !important;
+} 
+
+
