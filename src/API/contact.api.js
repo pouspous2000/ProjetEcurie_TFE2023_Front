@@ -9,54 +9,54 @@ const contactApi = apiSlice.injectEndpoints({
 		getContacts: builder.query({
 			query: () => `/${routePrefix}`,
 			transformResponse: response => response.sort((a, b) => b.id - a.id),
-			providesTags: ['CONTACTS']
+			providesTags: ['CONTACTS'],
 		}),
 		getContactByRole: builder.query({
 			query: roleId => ({
 				url: `/${routePrefix}/by-role/${roleId}`,
-				method: 'GET'
+				method: 'GET',
 			}),
 			transformResponse: response => response.sort((a, b) => b.id - a.id),
-			providesTags: ['CONTACTS_BY_ROLE']
+			providesTags: ['CONTACTS_BY_ROLE'],
 		}),
-		getContactByRoleCategory:  builder.query({
+		getContactByRoleCategory: builder.query({
 			query: roleCategory => ({
 				url: `/${routePrefix}/by-role-category/${roleCategory}`,
-				method: 'GET'
+				method: 'GET',
 			}),
 			transformResponse: response => response.sort((a, b) => b.id - a.id),
-			providesTags: ['CONTACTS_BY_ROLE_CATEGORY']
+			providesTags: ['CONTACTS_BY_ROLE_CATEGORY'],
 		}),
 		addContact: builder.mutation({
 			query: contact => ({
 				url: `/${routePrefix}`,
 				method: 'POST',
-				body: contact
+				body: contact,
 			}),
-			invalidatesTags: tags
+			invalidatesTags: tags,
 		}),
 		getContact: builder.query({
 			query: ({ id }) => ({
-			url:`/${routePrefix}/${id}`,
-			method: 'GET'
-		})
+				url: `/${routePrefix}/${id}`,
+				method: 'GET',
+			}),
 		}),
 		updateContact: builder.mutation({
 			query: contact => ({
 				url: `/${routePrefix}/${contact.id}`,
 				method: 'PUT',
-				body: contact
+				body: contact,
 			}),
-			invalidatesTags: tags
+			invalidatesTags: tags,
 		}),
 		deleteContact: builder.mutation({
 			query: contact => ({
 				url: `/${routePrefix}/${contact.id}`,
 				method: 'DELETE',
 			}),
-			invalidatesTags: tags
-		})
-	})
+			invalidatesTags: tags,
+		}),
+	}),
 })
 
 export const {
@@ -66,6 +66,5 @@ export const {
 	useGetContactQuery,
 	useAddContactMutation,
 	useUpdateContactMutation,
-	useDeleteContactMutation
+	useDeleteContactMutation,
 } = contactApi
-

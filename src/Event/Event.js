@@ -9,12 +9,15 @@ import 'react-big-calendar/lib/css/react-big-calendar.css'
 import { ModalGeneric } from './Component/ModalGeneric'
 import useModal from '../shared/hooks/use-modal'
 import { useGetEventablesQuery } from '../API/eventable.api'
-import { getFilteredEvents, conditionalColor, views, conditionalRenderingOnId} from '../Event/EventUtils'
+import { getFilteredEvents, conditionalColor, views, conditionalRenderingOnId } from '../Event/EventUtils'
+// TODO => LOGIN OK
+// import { useSelector } from 'react-redux'
 
 moment.locale('fr')
 const localizer = momentLocalizer(moment)
 
 export const Event = () => {
+	// const userId = useSelector(state => state.authentication.userId)
 
 	const [selectedEvent, setSelectedEvent] = useState(null)
 
@@ -47,39 +50,40 @@ export const Event = () => {
 		} else if (isGetEventableError) {
 			return <BaseErrorAlert message={getEventableError} />
 		} else if (isGetEventablesSuccess) {
-			const filteredEvents = getFilteredEvents( selectedCategory, eventables )
-			const formattedEvents = filteredEvents && filteredEvents.map(eventable => ({
-				category: eventable.eventable,
-				title: eventable.name === undefined ? 'Cours' : eventable.name,
-				id: eventable.id,
-				start: new Date(eventable.startingAt).toString(),
-				end: new Date(eventable.endingAt).toString(),
-				creator: eventable.creator,
-				...(eventable && eventable.eventable) === 'event' || (eventable.eventable === 'competition') ?
+			// TODO
+			// const filteredEvents = getFilteredEvents( selectedCategory, eventables, id )
+			const filteredEvents = getFilteredEvents(selectedCategory, eventables)
 
-					{
-						description: eventable.description,
-						participants: eventable.participants
-					}
-					:
-					eventable && eventable.eventable === 'task' ?
-						{
-							remark: eventable.remark,
-							status: eventable.status,
-							employee: eventable.employee,
-							description: eventable.description,	
-						}
-						:
-						{
-							status: eventable.status,
-							client: eventable.client
-						}
-
-			}));
+			const formattedEvents =
+				filteredEvents &&
+				filteredEvents.map(eventable => ({
+					category: eventable.eventable,
+					title: eventable.name === undefined ? 'Cours' : eventable.name,
+					id: eventable.id,
+					start: new Date(eventable.startingAt).toString(),
+					end: new Date(eventable.endingAt).toString(),
+					creator: eventable.creator,
+					...((eventable && eventable.eventable) === 'event' || eventable.eventable === 'competition'
+						? {
+								description: eventable.description,
+								participants: eventable.participants,
+						  }
+						: eventable && eventable.eventable === 'task'
+						? {
+								remark: eventable.remark,
+								status: eventable.status,
+								employee: eventable.employee,
+								description: eventable.description,
+						  }
+						: {
+								status: eventable.status,
+								client: eventable.client,
+						  }),
+				}))
 
 			const eventStyleGetter = (eventables, isSelected) => {
 				const backgroundColor = conditionalColor(eventables.category)
-				
+
 				return {
 					style: {
 						backgroundColor,
@@ -88,9 +92,8 @@ export const Event = () => {
 						color: 'white',
 						border: 'none',
 					},
-				};
-
-			};
+				}
+			}
 			return (
 				<div>
 					<Calendar
@@ -107,11 +110,17 @@ export const Event = () => {
 
 					{selectedEvent && (
 						<>
-							{selectedEvent.creator &&
+							{selectedEvent.creator && (
 								<>
-									{conditionalRenderingOnId(selectedEvent.creator.userId, selectedEvent.category, selectedEvent, uniqueCategories, createModal)}
+									{conditionalRenderingOnId(
+										selectedEvent.creator.userId,
+										selectedEvent.category,
+										selectedEvent,
+										uniqueCategories,
+										createModal
+									)}
 								</>
-							}
+							)}
 						</>
 					)}
 				</div>
@@ -166,12 +175,7 @@ export const Event = () => {
 
 			{createModal.isVisible && (
 				<>
-					<ModalGeneric
-						modal={createModal}
-						type="Add"
-						isAutor={true}
-						categories={uniqueCategories}
-					/>
+					<ModalGeneric modal={createModal} type="Add" isAutor={true} categories={uniqueCategories} />
 				</>
 			)}
 			{conditionalRendering()}

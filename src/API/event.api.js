@@ -1,7 +1,7 @@
 import { apiSlice } from '../shared/store/api-slice'
 
 const tag = 'EVENTS'
-
+const tag_eventable = 'EVENTABLES'
 const EventApi = apiSlice.injectEndpoints({
 	addTagTypes: [tag],
 	endpoints: builder => ({
@@ -11,7 +11,7 @@ const EventApi = apiSlice.injectEndpoints({
 				method: 'POST',
 				body: event,
 			}),
-			invalidatesTags: [tag],
+			invalidatesTags: [tag_eventable],
 		}),
 		getEvent: builder.query({
 			query: event => `/events/${event.id}`,
@@ -23,7 +23,7 @@ const EventApi = apiSlice.injectEndpoints({
 				method: 'PUT',
 				body: event,
 			}),
-			invalidatesTags: [tag],
+			invalidatesTags: [tag_eventable],
 		}),
 		deleteEvent: builder.mutation({
 			query: ({ id }) => ({
@@ -31,7 +31,7 @@ const EventApi = apiSlice.injectEndpoints({
 				method: 'DELETE',
 				body: id,
 			}),
-			invalidatesTags: [tag],
+			invalidatesTags: [tag_eventable],
 		}),
 		subscribeEvent: builder.mutation({
 			query: event => ({
@@ -39,7 +39,7 @@ const EventApi = apiSlice.injectEndpoints({
 				method: 'POST',
 				body: {},
 			}),
-			invalidatesTags: [tag],
+			invalidatesTags: [tag_eventable],
 		}),
 	}),
 })

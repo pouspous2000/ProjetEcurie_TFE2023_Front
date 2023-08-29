@@ -1,0 +1,25 @@
+.navbar {
+    height: 4rem;
+    background-color:  #353535;
+    width: 100%
+}
+
+.icon {
+    color: #F5F5DC !important;
+    font-size :2rem !important;
+    border:none;
+    background-color: transparent !important;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    padding-top: 0.25rem;
+}
+
+.icon:hover{
+    margin-top: 0.25rem !important;
+    /*color: rgba(217, 199, 65, 0.662) !important;*/
+    color: red !important;
+}
+
+.active {
+    color: red !important;
+}

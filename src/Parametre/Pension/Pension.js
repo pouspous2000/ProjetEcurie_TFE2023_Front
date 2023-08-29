@@ -30,15 +30,12 @@ export const Pension = () => {
 								PensionName={pension.name}
 								PensionPrice={pension.monthlyPrice}
 								PensionDescription={pension.description}
-								
 								PensionId={pension.id}
 							/>
 						</>
 					))}
 				</>
 			)
-		} else {
-			return <p>Pas bon ... </p>
 		}
 	}
 	return (
@@ -48,7 +45,7 @@ export const Pension = () => {
 			</h2>
 
 			<h3 style={{ margin: '35px' }}>
-				Pension 
+				Pension
 				<button
 					onClick={() => createModal.openHandler()}
 					title="Ajouter une pension"
@@ -64,8 +61,10 @@ export const Pension = () => {
 					<i class="bi bi-plus-circle" />
 				</button>
 			</h3>
-			{createModal.isVisible && <ModalAddUpdatePension modal={createModal} />}
-			{conditionalRendering()}
+			<div style={{ minHeight: '100%', overflow: 'auto', width: '70vw', height: '80vh' }}>
+				{createModal.isVisible && <ModalAddUpdatePension modal={createModal} />}
+				{conditionalRendering()}
+			</div>
 		</div>
 	)
 }

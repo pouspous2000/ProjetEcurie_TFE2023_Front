@@ -10,6 +10,7 @@ const eventApi = apiSlice.injectEndpoints({
 			providesTags: [tag],
 		}),
 	}),
+	invalidatesTags: [tag],
 })
 
 export const { useGetEventablesQuery } = eventApi

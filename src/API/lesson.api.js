@@ -1,7 +1,7 @@
 import { apiSlice } from '../shared/store/api-slice'
 
 const tag = 'LESSONS'
-
+const tag_eventable = 'EVENTABLES'
 const LessonApi = apiSlice.injectEndpoints({
 	addTagTypes: [tag],
 	endpoints: builder => ({
@@ -11,7 +11,7 @@ const LessonApi = apiSlice.injectEndpoints({
 				method: 'POST',
 				body: lesson,
 			}),
-			invalidatesTags: [tag],
+			invalidatesTags: [tag_eventable],
 		}),
 		getLesson: builder.query({
 			query: lesson => `/lessons/${lesson.id}`,
@@ -23,7 +23,7 @@ const LessonApi = apiSlice.injectEndpoints({
 				method: 'PUT',
 				body: lesson,
 			}),
-			invalidatesTags: [tag],
+			invalidatesTags: [tag_eventable],
 		}),
 		deleteLesson: builder.mutation({
 			query: ({ id }) => ({
@@ -31,7 +31,7 @@ const LessonApi = apiSlice.injectEndpoints({
 				method: 'DELETE',
 				body: id,
 			}),
-			invalidatesTags: [tag],
+			invalidatesTags: [tag_eventable],
 		}),
 		subscribeLesson: builder.mutation({
 			query: lesson => ({
@@ -39,7 +39,7 @@ const LessonApi = apiSlice.injectEndpoints({
 				method: 'POST',
 				body: {},
 			}),
-			invalidatesTags: [tag],
+			invalidatesTags: [tag_eventable],
 		}),
 	}),
 })

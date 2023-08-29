@@ -31,7 +31,6 @@ export const Additive = () => {
 								AdditivePrice={additive.price}
 								AdditiveId={additive.id}
 							/>
-
 						</>
 					))}
 				</>
@@ -62,8 +61,10 @@ export const Additive = () => {
 					<i className="bi bi-plus-circle" />
 				</button>
 			</h3>
-			{createModal.isVisible && <ModalAddAdditive modal={createModal} />}
-			{conditionalRendering()}
+			<div style={{ minHeight: '100%', overflow: 'auto', width: '70vw', height: '80vh' }}>
+				{createModal.isVisible && <ModalAddAdditive modal={createModal} />}
+				{conditionalRendering()}
+			</div>
 		</div>
 	)
 }
