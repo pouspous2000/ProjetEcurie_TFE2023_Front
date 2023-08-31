@@ -7,19 +7,21 @@ const authenticationSlice = createSlice({
 	initialState: TokenUtils.getTokensAndRoleCategory(),
 	reducers: {
 		setAuthentication(state, actions) {
-			TokenUtils.setTokensAndRoleCategory(actions.payload)
-			state.authentication = TokenUtils.getTokensAndRoleCategory()
+			const { token, refreshToken, roleCategory } = TokenUtils.setTokensAndRoleCategory({ ...actions.payload })
+			state.token = token
+			state.refreshToken = refreshToken
+			state.roleCategory = roleCategory
 		},
 		logout(state) {
 			const credentials = {
 				token: '',
 				refreshToken: '',
 				roleCategory: roleCategories.CLIENT,
-				// TODO ! change me
-				userId: 1,
 			}
-			TokenUtils.setTokensAndRoleCategory(credentials)
-			state.authentication = TokenUtils.getTokensAndRoleCategory()
+			const { token, refreshToken, roleCategory } = TokenUtils.setTokensAndRoleCategory(credentials)
+			state.token = token
+			state.refreshToken = refreshToken
+			state.roleCategory = roleCategory
 		},
 	},
 })

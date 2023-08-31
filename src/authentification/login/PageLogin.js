@@ -15,13 +15,10 @@ export const PageLogin = () => {
 	const { t } = useTranslation()
 	const dispatch = useDispatch()
 	const navigate = useNavigate()
-	// TO DO add me
-	// const auth = useSelector(state => state.authentication)
-	// const isLoggedIn = useSelector(state => !!(state.authentication.token && state.authentication.refreshToken && state.authentication.roleCategory))
-	// TO DO rm
-	const isLoggedIn = roleCategories.ADMIN
-	// console.log('auth : ', auth)
-	// console.log('isLoggedIn : ', isLoggedIn)
+	const isLoggedIn = useSelector(
+		state =>
+			!!(state.authentication.token && state.authentication.refreshToken && state.authentication.roleCategory)
+	)
 
 	const [isPasswordVisible, setIsPasswordVisible] = useState(false)
 	const [error, setError] = useState('')
@@ -65,7 +62,6 @@ export const PageLogin = () => {
 
 	const logoutHandler = () => {
 		dispatch(authenticationActions.logout())
-		window.location.reload()
 	}
 
 	const togglePasswordVisibility = () => {

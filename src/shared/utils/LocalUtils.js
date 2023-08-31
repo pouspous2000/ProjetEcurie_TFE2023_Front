@@ -1,22 +1,22 @@
-// import todoLocales from '../../Todo/locales'
 import { navLocales } from '../../layout/locales'
 import { errorLocales } from '../../error/locals'
-// import {pensionLocales} from '../../backoffice/pension/locales'
+
 import { authenticationLocales } from '../../authentification/locals'
 import { notFoundLocales } from '../../404/locales'
+import { rgpdLocales } from '../../rgpd/Locals'
 
 export class LocalUtils {
 	static allLocales = [
 		navLocales,
 		errorLocales,
-		// pensionLocales,
 		authenticationLocales,
 		notFoundLocales,
-		// todoLocales,
+		rgpdLocales,
 		{
 			fr: {
 				hello: 'Bonjour en francais',
 				loading: 'Chargement',
+				authentication_notAuthenticated: 'Veuillez vous identifier',
 			},
 			en: {
 				hello: 'Hello ! in english ',

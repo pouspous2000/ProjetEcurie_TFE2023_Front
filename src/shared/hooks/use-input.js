@@ -5,7 +5,6 @@ const useInput = (validateFn, defaultValue = '') => {
 	const [enteredValue, setEnteredValue] = useState(defaultValue)
 	const [hadFocus, setHadFocus] = useState(!!enteredValue)
 
-	// derived properties depending on states but which don't require their own state
 	let errorMessage = ''
 	let isValueValid = false
 
@@ -16,7 +15,6 @@ const useInput = (validateFn, defaultValue = '') => {
 		if (error instanceof StableValidationError) {
 			errorMessage = error.message
 		} else {
-			// this is an unhandled error we do NOT want to catch it
 			console.error(error.message)
 			throw error
 		}

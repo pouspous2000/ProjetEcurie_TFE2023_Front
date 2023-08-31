@@ -6,19 +6,21 @@ export class TokenUtils {
 		localStorage.setItem('token', payload.token)
 		localStorage.setItem('refreshToken', payload.refreshToken)
 		localStorage.setItem('roleCategory', payload.roleCategory)
-		localStorage.setItem('userId', payload.userId)
+
+		return {
+			token: payload.token,
+			refreshToken: payload.refreshToken,
+			roleCategory: payload.roleCategory,
+		}
 	}
 
 	static getTokensAndRoleCategory() {
 		return {
 			token: localStorage.getItem('token'),
 			refreshToken: localStorage.getItem('refreshToken'),
-			// TODO add
-			// roleCategory: localStorage.getItem('roleCategory') ? localStorage.getItem('roleCategory') : roleCategories.CLIENT
-			//TODO rm
-			roleCategory: roleCategories.ADMIN,
-			// TODO ! hardcode change me
-			userId: 1,
+			roleCategory: localStorage.getItem('roleCategory')
+				? localStorage.getItem('roleCategory')
+				: roleCategories.CLIENT,
 		}
 	}
 }

@@ -4,6 +4,7 @@ export const authenticationLocales = {
 		user_validation_email: 'Veuillez entrer une adresse email valide',
 		user_validation_password: 'Le mot de passe doit contenir entre 1 et 255 caractères',
 		user_validation_passwordConfirm: 'Les mots de passe doivent correspondre',
+		user_validation_confirmationCode: 'Le code de confirmation doit contenir entre 1 et 255 caractères',
 
 		//fields
 		authentication_fields_email_label: 'nom',
@@ -31,6 +32,16 @@ export const authenticationLocales = {
 		authentication_register_passwordConfirm_hide: 'masquer le mot de passe de confirmation',
 		authentication_register_passwordConfirm_show: 'afficher le mot de passe de confirmation',
 		authentication_register_register: 'créer un compte',
+		authentication_register_successMessage:
+			'Votre compte a bien été créé, vous allez recevoir un email vous permettant de confirmer votre compte',
+		authentication_register_redirection: 'confirmer votre adresse',
+
+		//pageConfirmation
+		authentication_confirmation_title: 'confirmer mon identité',
+		authentication_confirmation_label: 'mon code de confirmation',
+		authentication_confirmation_submit: 'valider',
+		authentication_confirmation_success: 'Votre compte a bien été validé',
+		authentication_confirmation_redirection: 'authentification',
 	},
 	en: {},
 	nl: {},

@@ -1,17 +1,3 @@
-// import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
-
-// export const apiSlice = createApi({
-// 	reducerPath: 'api',
-// 	baseQuery: fetchBaseQuery({
-// 		// baseUrl: 'http://172.31.36.83:3003',
-// 		baseUrl : 'http://localhost:3003',
-// 		prepareHeaders: (headers, { getState }) => {
-// 			headers.set('authorization', `Bearer token`)
-// 		},
-// 	}),
-// 	endpoints: () => ({}),
-// })
-
 import { store } from './store'
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { authenticationActions } from './authentication-slice'
@@ -22,10 +8,10 @@ const customBaseQuery = fetchBaseQuery({
 	prepareHeaders: (headers, { getState }) => {
 		const authenticationState = getState().authentication
 		headers.set('authorization', `Bearer ${authenticationState.token ? authenticationState.token : 'invalidToken'}`)
-		// TODO add
-		// headers.set('refreshtoken', authenticationState.refreshToken ? authenticationState.refreshToken : 'invalidRefreshToken')
-		// TO DO rm
-		headers.set('authorization', `Bearer token`)
+		headers.set(
+			'refreshtoken',
+			authenticationState.refreshToken ? authenticationState.refreshToken : 'invalidRefreshToken'
+		)
 	},
 })
 
@@ -36,19 +22,19 @@ export const apiSlice = createApi({
 
 		let { token, refreshToken, roleCategory } = store.getState().authentication
 
-		// TODO uncomment
-		// if (response && response.meta && response.meta.response && response.meta.response.headers) {
-		// 	token = response.meta.response.headers.get('Token')
-		// 	refreshToken = response.meta.response.headers.get('RefreshToken')
-		// 	roleCategory = response.meta.response.headers.get('RoleCategory')
-		// }
-		// end of comment
+		if (response && response.meta && response.meta.response && response.meta.response.headers) {
+			token = response.meta.response.headers.get('Token')
+			refreshToken = response.meta.response.headers.get('RefreshToken')
+			roleCategory = response.meta.response.headers.get('RoleCategory')
+		}
 
-		// store.dispatch(authenticationActions.setAuthentication({
-		// 	token: token,
-		// 	refreshToken: refreshToken,
-		// 	roleCategory: roleCategory
-		// }))
+		store.dispatch(
+			authenticationActions.setAuthentication({
+				token: token,
+				refreshToken: refreshToken,
+				roleCategory: roleCategory,
+			})
+		)
 
 		if (
 			response.error &&
@@ -60,10 +46,9 @@ export const apiSlice = createApi({
 		) {
 			window.location.href = '/authentication'
 		}
-		// TODO uncomment
-		// if(response.error && response.error && response.error.status && response.error.status === 'FETCH_ERROR'){
-		// 	window.location.href = '/error'
-		// }
+		if (response.error && response.error && response.error.status && response.error.status === 'FETCH_ERROR') {
+			window.location.href = '/error'
+		}
 		return response
 	},
 	endpoints: () => ({}),

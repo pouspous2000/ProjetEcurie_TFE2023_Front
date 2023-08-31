@@ -10,8 +10,8 @@ import { ModalGeneric } from './Component/ModalGeneric'
 import useModal from '../shared/hooks/use-modal'
 import { useGetEventablesQuery } from '../API/eventable.api'
 import { getFilteredEvents, conditionalColor, views, conditionalRenderingOnId } from '../Event/EventUtils'
-// TODO => LOGIN OK
-// import { useSelector } from 'react-redux'
+
+import { useSelector } from 'react-redux'
 
 moment.locale('fr')
 const localizer = momentLocalizer(moment)

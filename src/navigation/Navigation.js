@@ -42,12 +42,22 @@ export class Navigation {
 			[roleCategories.ADMIN, roleCategories.EMPLOYEE, roleCategories.CLIENT],
 			'bi bi-people',
 			[
-				new SubMenu(roleCategories.ADMIN, 'client', 'common_nav_side_community_admin_client', 'Tmp'),
-				new SubMenu(roleCategories.ADMIN, 'employee', 'common_nav_side_community_admin_employee', 'Tmp'),
+				new SubMenu(roleCategories.ADMIN, 'client', 'common_nav_side_community_admin_client', 'ClientView'),
+				new SubMenu(
+					roleCategories.ADMIN,
+					'employee',
+					'common_nav_side_community_admin_employee',
+					'ClientEmployeeView'
+				),
 				new SubMenu(roleCategories.ADMIN, 'invoice', 'common_nav_side_community_admin_invoice', 'Tmp'),
-				new SubMenu(roleCategories.EMPLOYEE, 'client', 'common_nav_side_community_employee_client', 'Tmp'),
+				new SubMenu(
+					roleCategories.EMPLOYEE,
+					'client',
+					'common_nav_side_community_employee_client',
+					'ClientView'
+				),
 				new SubMenu(roleCategories.EMPLOYEE, 'invoice', 'common_nav_side_community_employee_invoice', 'Tmp'),
-				new SubMenu(roleCategories.CLIENT, 'horse', 'common_nav_side_community_client_horse', 'PageTwo'),
+				new SubMenu(roleCategories.CLIENT, 'horse', 'common_nav_side_community_client_horse', ' Cheval'),
 				new SubMenu(roleCategories.CLIENT, 'invoice', 'common_nav_side_community_client_invoice', 'Tmp'),
 			]
 		),

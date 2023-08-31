@@ -35,10 +35,10 @@
     color: rgb(250, 250, 255)!important;
     text-decoration: underline !important;
 }
-li{
+.sidebar li{
     background-color: rgb(167, 178, 178);
     border-radius: 10px;
 }
-li:hover{
+.sidebar li:hover{
 
 }

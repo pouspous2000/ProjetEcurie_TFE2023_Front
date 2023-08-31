@@ -1,8 +1,7 @@
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-// import {useSelector} from 'react-redux'
-import { roleCategories } from '../../../../constants/constants'
+import { useSelector } from 'react-redux'
 import { Col } from 'react-bootstrap'
 import { Navigation } from '../../../../navigation/Navigation'
 import classes from './Navsidebardesktop.module.css'
@@ -11,24 +10,27 @@ export const NavSideBarDesktop = () => {
 	const { t } = useTranslation()
 	const location = useLocation()
 	const navigate = useNavigate()
-	// TO DO add
-	// const role = useSelector(state => state.authentication.roleCategory)
-	// TO DO rm
-	const role = roleCategories.ADMIN
-
+	const role = useSelector(state => state.authentication.roleCategory)
 	const [submenus, setSubmenus] = useState([])
 	const [activeSubmenu, setActiveSubmenu] = useState(undefined)
 	const [currentUrl, setCurrentUrl] = useState('')
+	const [currentRole, setCurrentRole] = useState(undefined)
 
 	useEffect(() => {
-		if (currentUrl !== location.pathname) {
+		let hasChangedRole = false
+		if (currentRole !== role) {
+			setCurrentRole(role)
+			hasChangedRole = true
+		}
+
+		if (currentUrl !== location.pathname || hasChangedRole) {
 			setCurrentUrl(location.pathname)
 			if (role) {
 				setSubmenus(Navigation.getSubMenusForRoleAndUrl(location.pathname, role))
 				setActiveSubmenu(Navigation.getActiveSubMenu(location.pathname))
 			}
 		}
-	}, [location.pathname, currentUrl, role])
+	}, [location.pathname, currentUrl, role, currentRole, setCurrentRole])
 
 	const changeSubmenuHandler = submenuUrl => {
 		if (submenuUrl !== activeSubmenu.url && role) {
